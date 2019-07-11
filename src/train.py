@@ -175,7 +175,8 @@ class Train():
         os.makedirs(image_dir)
         utils.unpack(train_dir, args.train_tar)
         utils.unpack(val_dir, args.val_tar)
-        labels = list(os.listdir('/home/cohale/keras-classify/data/train'))
+        labels = list(os.listdir('/Users/chale/Desktop/keras_classify/data/train'))
+
 
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
         train = Train()
@@ -222,7 +223,7 @@ if __name__ == '__main__':
         print('Need to set WANDB_RUN_GROUP environment variable for this run')
         exit(-1)
     print('Connecting to wandb with group {}'.format(env['WANDB_RUN_GROUP']))
-    wandb.init(project=args.project, job_type='training', name='kerasclassification-' + args.project,
+    wandb.init(sync_tensorboard=True, project=args.project, job_type='training', name='kerasclassification-' + args.project,
                dir=os.getcwd())
 
     parser.log_params(wandb)
