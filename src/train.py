@@ -61,7 +61,7 @@ class Train():
         else:
             monitor = 'val_binary_accuracy'
 
-        early = EarlyStopping(monitor=monitor, min_delta=0, patience=2, verbose=1, mode='auto')
+        early = EarlyStopping(monitor=monitor, min_delta=0, patience=5, verbose=1, mode='auto')
         checkpoint_path = '{}/checkpoints.best.h5'.format(output_dir)
         checkpoint = ModelCheckpoint(checkpoint_path, monitor=monitor, verbose=1, save_best_only=True, mode='max')
         if os.path.exists(checkpoint_path):
