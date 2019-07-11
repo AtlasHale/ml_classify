@@ -1,10 +1,3 @@
-__author__ = 'Connor Hale, Danelle Cline, Nathanial Yee'
-
-"""
-Taken from code provided by Danelle Cline at MBARI, code updated from cats and dogs to match a deep sea data set.
-"""
-
-
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -175,7 +168,7 @@ class Train():
         os.makedirs(image_dir)
         utils.unpack(train_dir, args.train_tar)
         utils.unpack(val_dir, args.val_tar)
-        labels = list(os.listdir('/Users/chale/Desktop/keras_classify/data/train'))
+        labels = list(os.listdir(os.getcwd()+'/data/train'))
 
 
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
