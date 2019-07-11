@@ -8,15 +8,47 @@ import tempfile
 import keras
 from keras import optimizers
 from keras import metrics
-from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint
+from tensorflow.python.keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, Callback
 from transfer_model import TransferModel
 import wandb
 from wandb.keras import WandbCallback
 from argparser import ArgParser
 import utils
-from plot import Plot
-import glob
-import conf
+import numpy as np
+from sklearn.metrics import f1_score, precision_score, recall_score
+
+
+class Metrics(Callback):
+
+    def __init__(self, labels):
+        self.labels = labels
+
+    def on_train_begin(self, logs={}):
+        self.val_f1s = []
+        self.val_recalls = []
+        self.val_precisions = []
+        self.val_f1_overall = []
+        self.val_recalls_overall = []
+        self.val_precisions_overall = []
+
+    def on_epoch_end(self, epoch, logs={}):
+        val_predict = (np.asarray(self.model.predict(self.model.validation_data[0]))).round()
+        ind = np.arrange(len(self.labels))
+        val_targ = self.model.validation_data[1]
+        _val_f1 = f1_score(val_targ, val_predict, labels=ind, average=None)
+        _val_recall = recall_score(val_targ, val_predict, labels=ind, average=None)
+        _val_precision = precision_score(val_targ, val_predict, labels=ind, average=None) # possibly something besides none (binary, etc)
+        _val_f1_overall = f1_score(val_targ, val_predict)
+        _val_recall_overall = recall_score(val_targ, val_predict)
+        _val_precision_overall = precision_score(val_targ, val_predict)
+        self.val_f1s.append(_val_f1)
+        self.val_recalls.append(_val_recall)
+        self.val_precisions.append(_val_precision)
+        self.val_f1s_overall.append(_val_f1_overall)
+        self.val_recalls_overall.append(_val_recall_overall)
+        self.val_precisions_overall.append(_val_precision_overall)
+        print(f"— val_f1: {_val_f1}, val_precision: {_val_precision} — val_recall {_val_recall}")
+        return
 
 class Train():
 
@@ -74,7 +106,14 @@ class Train():
                                  lr_decay=0.9,
                                  cycle_length=5,
                                  mult_factor=1.5)'''
-
+        m = Metrics(labels)
+        # add m to list of callbacks
+        # callbacks is a list of pointers to functions that get called at end of epoch
+        """
+        File "/Users/chale/Desktop/ml_classify/src/train.py", line 35, in on_epoch_end
+        val_predict = (np.asarray(self.model.predict(self.model.validation_data[0]))).round()
+        AttributeError: 'Sequential' object has no attribute 'validation_data'
+        """
         history = model.fit_generator(train_generator,
                                            steps_per_epoch=steps_per_epoch,
                                            epochs=epochs,
@@ -168,7 +207,8 @@ class Train():
         os.makedirs(image_dir)
         utils.unpack(train_dir, args.train_tar)
         utils.unpack(val_dir, args.val_tar)
-        labels = list(os.listdir(os.getcwd()+'/data/train'))
+        project_home = os.environ.get('PROJECT_HOME')
+        labels = list(os.listdir(os.environ.get(project_home+'/data/train')))
 
 
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)

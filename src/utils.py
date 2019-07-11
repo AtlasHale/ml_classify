@@ -22,8 +22,8 @@ def unpack(out_dir, tar_file):
         tar.extractall(path=out_dir)
         tar.close()
     elif 'tar.gz' not in tar_file:
-        folder=os.getcwd()+'/'+tar_file
-        shutil.copytree(folder, out_dir)
+        project_home = os.environ.get('PROJECT_HOME')
+        shutil.copytree(project_home+'/data/'+tar_file, out_dir)
     # create labels from directory names
     
 
