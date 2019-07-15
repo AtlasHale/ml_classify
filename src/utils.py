@@ -6,11 +6,10 @@ from google.cloud import storage
 
 def unpack(out_dir, tar_file, tar_bucket=None):
     if 'tar.gz' in tar_file and 'gs' in tar_bucket:
-        print(f"\n\nmade it here\nout_dir = {out_dir}\ntar_file = {tar_file}\nbucket = {tar_bucket}")
-        download_gs(tar_file, tar_bucket, out_dir)
+        download_gs(tar_file, tar_bucket, os.path.join(out_dir, 'data'))
         print('Unpacking {}'.format(tar_file))
-        tar = tarfile.open(os.path.join(out_dir, tar_file))
-        tar.extractall(path=out_dir)
+        tar = tarfile.open(os.path.join(out_dir, 'data', tar_file))
+        tar.extractall(path=os.path.join(out_dir, 'data'))
         tar.close()
     elif os.path.isfile(tar_file) and 'tar.gz' in tar_file and 's3' not in tar_file:
         print('Unpacking {}'.format(tar_file))
@@ -39,8 +38,6 @@ def download_gs(tar_file, tar_bucket, out_dir):
     if 'val' in tar_file:
         open('../data/val.tar.gz', 'w').close()
     out_file = os.path.join(out_dir, tar_file)
-    print(f"output path: {out_file}")
-    print(os.listdir(out_dir))
     blob.download_to_filename(out_file)
 
 

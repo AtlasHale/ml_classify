@@ -15,7 +15,7 @@ from wandb.keras import WandbCallback
 from argparser import ArgParser
 import utils
 import numpy as np
-import threading
+from threading import Thread
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 
@@ -51,7 +51,8 @@ class Metrics(Callback):
         print(f"— val_f1: {_val_f1}, val_precision: {_val_precision} — val_recall {_val_recall}")
         return
 
-class Train():
+
+class Train:
 
     def __init__(self):
         return
@@ -62,7 +63,7 @@ class Train():
                               save_model=False, output_dir='/tmp'):
 
         print('Writing TensorFlow events locally to {}'.format(output_dir))
-        tensorboard = TensorBoard(log_dir=os.environ.get('PROJECT_HOME'))
+        tensorboard = TensorBoard(log_dir=os.environ.get('PROJECT_HOME')+'/tensorboard_logging')
 
         steps_per_epoch = train_generator.n // batch_size
         validation_steps = validation_generator.n // batch_size
@@ -201,16 +202,21 @@ class Train():
                                                                    shear_range=args.shear_range
                                                                    )
         project_home = os.environ.get('PROJECT_HOME')
+        if not os.path.exists(os.path.join(project_home, 'data')):
+            os.mkdir(os.path.join(project_home, 'data'))
         output_dir = os.path.join(project_home, 'data')
         train_dir = os.path.join(output_dir, 'train')
         val_dir = os.path.join(output_dir, 'val')
-        print(train_dir, '\n', val_dir)
-        print(os.listdir(output_dir))
         if 'train' not in os.listdir(output_dir):
-            tar_bucket = os.environ.get('TAR_BUCKET')
-            utils.unpack(project_home, args.train_tar, tar_bucket)
-            utils.unpack(project_home, args.val_tar, tar_bucket)
-        labels = os.listdir(output_dir+'/train')# utils.list_bucket_contents(os.environ.get('BUCKET_NAME'))
+            def extract_tar():
+                tar_bucket = os.environ.get('TAR_BUCKET')
+                utils.unpack(project_home, args.train_tar, tar_bucket)
+                utils.unpack(project_home, args.val_tar, tar_bucket)
+
+            thread1 = Thread(target=extract_tar())
+            thread1.start()
+            thread1.join()
+        labels = os.listdir(output_dir+'/train')
 
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
         train = Train()
