@@ -15,6 +15,7 @@ from wandb.keras import WandbCallback
 from argparser import ArgParser
 import utils
 import numpy as np
+import threading
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 
@@ -61,7 +62,7 @@ class Train():
                               save_model=False, output_dir='/tmp'):
 
         print('Writing TensorFlow events locally to {}'.format(output_dir))
-        tensorboard = TensorBoard(log_dir=output_dir)
+        tensorboard = TensorBoard(log_dir=os.environ.get('PROJECT_HOME'))
 
         steps_per_epoch = train_generator.n // batch_size
         validation_steps = validation_generator.n // batch_size
@@ -199,16 +200,17 @@ class Train():
                                                                    vertical_flip=args.vertical_flip,
                                                                    shear_range=args.shear_range
                                                                    )
-
-        output_dir = tempfile.mkdtemp()
+        project_home = os.environ.get('PROJECT_HOME')
+        output_dir = os.path.join(project_home, 'data')
         train_dir = os.path.join(output_dir, 'train')
         val_dir = os.path.join(output_dir, 'val')
-        image_dir = os.path.join(output_dir, 'images')
-        os.makedirs(image_dir)
-        utils.unpack(train_dir, args.train_tar)
-        utils.unpack(val_dir, args.val_tar)
-        project_home = os.environ.get('PROJECT_HOME')
-        labels = utils.list_bucket_contents(os.environ.get('BUCKET_NAME'))
+        print(train_dir, '\n', val_dir)
+        print(os.listdir(output_dir))
+        if 'train' not in os.listdir(output_dir):
+            tar_bucket = os.environ.get('TAR_BUCKET')
+            utils.unpack(project_home, args.train_tar, tar_bucket)
+            utils.unpack(project_home, args.val_tar, tar_bucket)
+        labels = os.listdir(output_dir+'/train')# utils.list_bucket_contents(os.environ.get('BUCKET_NAME'))
 
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
         train = Train()

@@ -3,9 +3,16 @@ import tarfile
 import shutil
 from google.cloud import storage
 
-def unpack(out_dir, tar_file):
 
-    if os.path.isfile(tar_file) and 'tar.gz' in tar_file and 's3' not in tar_file:
+def unpack(out_dir, tar_file, tar_bucket=None):
+    if 'tar.gz' in tar_file and 'gs' in tar_bucket:
+        print(f"\n\nmade it here\nout_dir = {out_dir}\ntar_file = {tar_file}\nbucket = {tar_bucket}")
+        download_gs(tar_file, tar_bucket, out_dir)
+        print('Unpacking {}'.format(tar_file))
+        tar = tarfile.open(os.path.join(out_dir, tar_file))
+        tar.extractall(path=out_dir)
+        tar.close()
+    elif os.path.isfile(tar_file) and 'tar.gz' in tar_file and 's3' not in tar_file:
         print('Unpacking {}'.format(tar_file))
         tar = tarfile.open(tar_file)
         if not os.path.exists(out_dir):
@@ -21,11 +28,22 @@ def unpack(out_dir, tar_file):
         tar = tarfile.open(t)
         tar.extractall(path=out_dir)
         tar.close()
-    elif 'tar.gz' not in tar_file:
-        project_home = os.environ.get('PROJECT_HOME')
-        shutil.copytree(project_home+'/data/'+tar_file, out_dir)
-    # create labels from directory names
-    
+
+
+def download_gs(tar_file, tar_bucket, out_dir):
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket('s2019_tar_mbari')
+    blob = bucket.blob(tar_file)
+    if 'train' in tar_file:
+        open('../data/train.tar.gz', 'w').close()
+    if 'val' in tar_file:
+        open('../data/val.tar.gz', 'w').close()
+    out_file = os.path.join(out_dir, tar_file)
+    print(f"output path: {out_file}")
+    print(os.listdir(out_dir))
+    blob.download_to_filename(out_file)
+
+
 
 def list_bucket_contents(bucket):
     storage_client = storage.Client()
