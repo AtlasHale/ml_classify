@@ -208,8 +208,7 @@ class Train():
         utils.unpack(train_dir, args.train_tar)
         utils.unpack(val_dir, args.val_tar)
         project_home = os.environ.get('PROJECT_HOME')
-        labels = utils.list_bucket_contents('data_bucket_mbari')
-        print(labels)
+        labels = utils.list_bucket_contents(os.environ.get('BUCKET_NAME'))
 
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
         train = Train()
