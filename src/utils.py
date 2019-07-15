@@ -5,6 +5,7 @@ from google.cloud import storage
 
 
 def unpack(out_dir, tar_file, tar_bucket=None):
+    # out_dir is project home
     if 'tar.gz' in tar_file and 'gs' in tar_bucket:
         download_gs(tar_file, tar_bucket, os.path.join(out_dir, 'data'))
         print('Unpacking {}'.format(tar_file))
