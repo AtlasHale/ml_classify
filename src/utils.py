@@ -1,7 +1,7 @@
 import os
 import tarfile
 import shutil
-
+from google.cloud import storage
 
 def unpack(out_dir, tar_file):
 
@@ -27,8 +27,22 @@ def unpack(out_dir, tar_file):
     # create labels from directory names
     
 
-def download_s3(source_file, target_dir):
+def list_bucket_contents(bucket):
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket)
+    classes = []
+    blobs = bucket.list_blobs()
+    uniques = set()
+    for item in blobs:
+        l = str(item).split(', ')
+        current_species = l[1].split('/')[1]
+        if current_species not in uniques:
+            classes.append(current_species)
+            uniques.add(current_species)
+    return classes
 
+
+def download_s3(source_file, target_dir):
     try:
         import boto3
         from botocore.client import Config

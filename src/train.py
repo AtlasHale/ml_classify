@@ -179,7 +179,7 @@ class Train():
         :param parser: command line argument object
         """
 
-        sess = tf.InteractiveSession()
+        sess = tf.compat.v1.InteractiveSession()
 
         # Rescale all images by 1./255 and apply image augmentation if requested
         train_datagen = keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255,
@@ -208,8 +208,8 @@ class Train():
         utils.unpack(train_dir, args.train_tar)
         utils.unpack(val_dir, args.val_tar)
         project_home = os.environ.get('PROJECT_HOME')
-        labels = list(os.listdir(os.environ.get(project_home+'/data/train')))
-
+        labels = utils.list_bucket_contents('data_bucket_mbari')
+        print(labels)
 
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
         train = Train()
