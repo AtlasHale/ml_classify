@@ -16,8 +16,7 @@ from argparser import ArgParser
 import utils
 import numpy as np
 from threading import Thread
-import sklearn
-import scipy
+import sklearn.metrics
 
 class Metrics(Callback):
 
@@ -37,31 +36,64 @@ class Metrics(Callback):
         self.val_precisions_overall = []
 
     def on_epoch_end(self, epoch, logs={}):
-        print('End Of Epoch Report:')
+        print(f'End Of Epoch {self.epoch_count} Report:\n')
         self.epoch_count += 1
-
         batches = len(self.validation_data)
         total = batches * self.batch_size
-        index = np.arange(len(self.labels))
 
-        val_predict = np.zeros((total, 1))
+        print(total)
+        val_predict = np.zeros(total)
         val_true = np.zeros(total)
+        class_map = {}
+        label_index = 0
+        for label in self.labels:
+            class_map[label_index] = label
+            label_index += 1
+        print (class_map)
 
         for batch in range(batches):
-            xVal, yVal = next(self.validation_data)
+            try:
+                xVal, yVal = next(self.validation_data)
+            except StopIteration:
+                break
             """
             batch * self.batch_size
             if its 4 images per batch and 100 images, that means 
             """
-            val_predict[batch * self.batch_size : (batch+1) * self.batch_size] = scipy.stats.mode(np.asarray(self.model.predict_classes(xVal)))
-            val_true[batch * self.batch_size : (batch+1) * self.batch_size] = yVal
 
-        _val_f1 = sklearn.metrics.f1_score(val_true, val_predict, labels=index, average=None)
-        _val_recall = sklearn.metrics.recall_score(val_true, val_predict, labels=index, average=None)
-        _val_precision = sklearn.metrics.precision_score(val_true, val_predict, labels=index, average=None) # possibly something besides none (binary, etc)
-        _val_f1_overall = sklearn.metrics.f1_score(val_true, val_predict)
-        _val_recall_overall = sklearn.metrics.recall_score(val_true, val_predict)
-        _val_precision_overall = sklearn.metrics.precision_score(val_true, val_predict)
+            for i in range(self.batch_size):
+                val_predict[batch * self.batch_size + i] = np.asarray(self.model.predict_classes(xVal))[i]
+                val_true[batch * self.batch_size + i] = np.argmax(yVal, axis=1)[i]
+                print(val_predict)
+                print(val_true)
+                if len(np.argmax(yVal, axis=1)) < self.batch_size and len(np.argmax(yVal, axis=1)) == i+1:
+                    val_predict = val_predict[:total-i-1]
+                    val_true = val_true[:total-i-1]
+                    break
+            # for true_value in yVal:
+             #   val_true[batch] = np.argmax()
+            # print(scipy.stats.mode(np.asarray(self.model.predict_classes(xVal))))
+            # val_predict[batch * self.batch_size : (batch+1) * self.batch_size] = scipy.stats.mode(np.asarray(self.model.predict_classes(xVal)))
+            #val_true[batch * self.batch_size : (batch+1) * self.batch_size] = yVal
+        print(val_predict)
+        print(val_true)
+        true_classes = []
+        predict_classes = []
+        for i in range(len(val_predict)):
+            true_classes.append(class_map[val_true[i]])
+            predict_classes.append(class_map[val_predict[i]])
+        print(sklearn.metrics.classification_report(
+            predict_classes,
+            true_classes,
+            labels=[i for i in range(len(self.labels))],
+            target_names=self.labels))
+        # TODO: fix sklearn metrics to have correct label and average params
+        _val_f1 = sklearn.metrics.f1_score(true_classes, predict_classes, labels=self.labels, average='weighted')
+        _val_recall = sklearn.metrics.recall_score(true_classes, predict_classes, labels=self.labels, average='weighted')
+        _val_precision = sklearn.metrics.precision_score(true_classes, predict_classes, labels=self.labels, average='weighted') # possibly something besides none (binary, etc)
+        _val_f1_overall = sklearn.metrics.f1_score(true_classes, predict_classes, labels=self.labels)
+        _val_recall_overall = sklearn.metrics.recall_score(true_classes, predict_classes, labels=self.labels,)
+        _val_precision_overall = sklearn.metrics.precision_score(true_classes, predict_classes, labels=self.labels,)
 
         self.val_f1s.append(_val_f1)
         self.val_recalls.append(_val_recall)
@@ -238,7 +270,7 @@ class Train:
             thread1 = Thread(target=extract_tar())
             thread1.start()
             thread1.join()
-        labels = os.listdir(output_dir+'/train')
+        labels = list(filter(('.DS_Store').__ne__, list(filter(('._.DS_Store').__ne__, os.listdir(output_dir+'/train')))))
 
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
         train = Train()
@@ -257,7 +289,6 @@ class Train:
             batch_size=args.batch_size,
             class_mode='categorical')
         model.summary()
-        print(dir(model))
         history = train.compile_and_fit_model(model=model, fine_tune_at=fine_tune_at,
                                               train_generator=training_generator, lr=args.lr,
                                               validation_generator=validation_generator,
