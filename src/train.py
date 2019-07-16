@@ -241,6 +241,7 @@ class Train:
             batch_size=args.batch_size,
             class_mode='categorical')
         model.summary()
+        print(dir(model))
         history = train.compile_and_fit_model(model=model, fine_tune_at=fine_tune_at,
                                               train_generator=training_generator, lr=args.lr,
                                               validation_generator=validation_generator,
