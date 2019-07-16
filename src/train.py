@@ -71,37 +71,33 @@ class Metrics(Callback):
                     val_true = val_true[:total-i-1]
                     break
             # for true_value in yVal:
-             #   val_true[batch] = np.argmax()
+            #    val_true[batch] = np.argmax()
             # print(scipy.stats.mode(np.asarray(self.model.predict_classes(xVal))))
             # val_predict[batch * self.batch_size : (batch+1) * self.batch_size] = scipy.stats.mode(np.asarray(self.model.predict_classes(xVal)))
             #val_true[batch * self.batch_size : (batch+1) * self.batch_size] = yVal
         print(val_predict)
         print(val_true)
-        true_classes = []
-        predict_classes = []
-        for i in range(len(val_predict)):
-            true_classes.append(class_map[val_true[i]])
-            predict_classes.append(class_map[val_predict[i]])
+
         print(sklearn.metrics.classification_report(
-            predict_classes,
-            true_classes,
+            val_predict,
+            val_true,
             labels=[i for i in range(len(self.labels))],
             target_names=self.labels))
         # TODO: fix sklearn metrics to have correct label and average params
-        _val_f1 = sklearn.metrics.f1_score(true_classes, predict_classes, labels=self.labels, average='weighted')
-        _val_recall = sklearn.metrics.recall_score(true_classes, predict_classes, labels=self.labels, average='weighted')
-        _val_precision = sklearn.metrics.precision_score(true_classes, predict_classes, labels=self.labels, average='weighted') # possibly something besides none (binary, etc)
-        _val_f1_overall = sklearn.metrics.f1_score(true_classes, predict_classes, labels=self.labels)
-        _val_recall_overall = sklearn.metrics.recall_score(true_classes, predict_classes, labels=self.labels,)
-        _val_precision_overall = sklearn.metrics.precision_score(true_classes, predict_classes, labels=self.labels,)
-
-        self.val_f1s.append(_val_f1)
-        self.val_recalls.append(_val_recall)
-        self.val_precisions.append(_val_precision)
-        self.val_f1s_overall.append(_val_f1_overall)
-        self.val_recalls_overall.append(_val_recall_overall)
-        self.val_precisions_overall.append(_val_precision_overall)
-        print(f'Epoch: {self.epoch_count} val_f1: {_val_f1}, val_precision: {_val_precision} — val_recall {_val_recall}')
+        # _val_f1 = sklearn.metrics.f1_score(val_true, val_predict, labels=self.labels, average='weighted')
+        # _val_recall = sklearn.metrics.recall_score(val_true, val_predict, labels=self.labels, average='weighted')
+        # _val_precision = sklearn.metrics.precision_score(val_true, val_predict, labels=self.labels, average='weighted') # possibly something besides none (binary, etc)
+        # _val_f1_overall = sklearn.metrics.f1_score(val_true, val_predict, labels=self.labels)
+        # _val_recall_overall = sklearn.metrics.recall_score(val_true, val_predict, labels=self.labels,)
+        # _val_precision_overall = sklearn.metrics.precision_score(val_true, val_predict, labels=self.labels,)
+        #
+        # self.val_f1s.append(_val_f1)
+        # self.val_recalls.append(_val_recall)
+        # self.val_precisions.append(_val_precision)
+        # self.val_f1s_overall.append(_val_f1_overall)
+        # self.val_recalls_overall.append(_val_recall_overall)
+        # self.val_precisions_overall.append(_val_precision_overall)
+        # print(f'Epoch: {self.epoch_count} val_f1: {_val_f1}, val_precision: {_val_precision} — val_recall {_val_recall}')
         return
 
 
