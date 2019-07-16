@@ -62,7 +62,7 @@ class Train:
                               metrics=metrics.categorical_accuracy,
                               save_model=False, output_dir='/tmp'):
 
-        print('Writing TensorFlow events locally to {}'.format(output_dir))
+        print('Writing TensorFlow events locally to tensorboard_logging')
         tensorboard = TensorBoard(log_dir=os.environ.get('PROJECT_HOME')+'/tensorboard_logging')
 
         steps_per_epoch = train_generator.n // batch_size
@@ -265,7 +265,7 @@ if __name__ == '__main__':
     print('Connecting to wandb with group {}'.format(env['WANDB_RUN_GROUP']))
     # TODO: Find why wandb couldnt import tensorboard.
     wandb.init(project=args.project, job_type='training', name='kerasclassification-' + args.project,
-               dir=os.getcwd())
+               dir=os.environ.get('PROJECT_HOME'))
     # wandb.tensorboard.patch(save=True, tensorboardX=False)
 
     parser.log_params(wandb)
