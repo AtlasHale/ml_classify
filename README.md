@@ -2,13 +2,12 @@ add GOOGLE_APPLICATION_CREDENTIALS to env
 https://cloud.google.com/storage/docs/reference/libraries to find how to generate API key
 
 example environment variables:    
-``
 WANDB_RUN_GROUP=chale    
 PROJECT_HOME=/Users/chale/Desktop/ml_classify    
-GOOGLE_APPLICATION_CREDENTIALS=/Users/chale/Desktop/ml_classify/credentials.json     
+GOOGLE_APPLICATION_CREDENTIALS=/Users/chale/Desktop/ml_classify/credentials.json
 BUCKET_NAME=data_bucket_mbari    
 TAR_BUCKET=s2019_tar_mbari    
-``    
+
     
 To run:   
 ``   
