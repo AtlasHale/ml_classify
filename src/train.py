@@ -263,8 +263,10 @@ if __name__ == '__main__':
         print('Need to set WANDB_RUN_GROUP environment variable for this run')
         exit(-1)
     print('Connecting to wandb with group {}'.format(env['WANDB_RUN_GROUP']))
-    wandb.init(sync_tensorboard=True, project=args.project, job_type='training', name='kerasclassification-' + args.project,
+    # TODO: Find why wandb couldnt import tensorboard.
+    wandb.init(project=args.project, job_type='training', name='kerasclassification-' + args.project,
                dir=os.getcwd())
+    # wandb.tensorboard.patch(save=True, tensorboardX=False)
 
     parser.log_params(wandb)
 

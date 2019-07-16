@@ -5,8 +5,7 @@ from google.cloud import storage
 
 
 def unpack(out_dir, tar_file, tar_bucket=None):
-    # out_dir is project home
-    if 'tar.gz' in tar_file and 'gs' in tar_bucket:
+    if 'tar.gz' in tar_file:
         download_gs(tar_file, tar_bucket, os.path.join(out_dir, 'data'))
         print('Unpacking {}'.format(tar_file))
         tar = tarfile.open(os.path.join(out_dir, 'data', tar_file))
@@ -32,7 +31,7 @@ def unpack(out_dir, tar_file, tar_bucket=None):
 
 def download_gs(tar_file, tar_bucket, out_dir):
     storage_client = storage.Client()
-    bucket = storage_client.get_bucket('s2019_tar_mbari')
+    bucket = storage_client.get_bucket(tar_bucket)
     blob = bucket.blob(tar_file)
     if 'train' in tar_file:
         open('../data/train.tar.gz', 'w').close()
