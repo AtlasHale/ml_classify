@@ -54,7 +54,7 @@ class TransferModel():
         model = tf.keras.Sequential([
             base_model,
             keras.layers.GlobalAveragePooling2D(),
-            keras.layers.Dense(23, activation='softmax')
+            keras.layers.Dense(11, activation='softmax')
         ])
 
         return model, image_size, fine_tune_at

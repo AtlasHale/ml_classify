@@ -23,6 +23,7 @@ class Metrics(Callback):
 
     def __init__(self, labels):
         self.labels = labels
+        self.epoch_count = 0
 
     def on_train_begin(self, logs={}):
         self.val_f1s = []
@@ -33,12 +34,16 @@ class Metrics(Callback):
         self.val_precisions_overall = []
 
     def on_epoch_end(self, epoch, logs={}):
+        print("made it to end of epoch callback, printing model and class attributes\n\n")
+        print(dir(self))
+        print(dir(self.model), '\n')
+        self.epoch_count += 1
         val_predict = (np.asarray(self.model.predict(self.model.validation_data[0]))).round()
-        ind = np.arrange(len(self.labels))
+        index = np.arrange(len(self.labels))
         val_targ = self.model.validation_data[1]
-        _val_f1 = f1_score(val_targ, val_predict, labels=ind, average=None)
-        _val_recall = recall_score(val_targ, val_predict, labels=ind, average=None)
-        _val_precision = precision_score(val_targ, val_predict, labels=ind, average=None) # possibly something besides none (binary, etc)
+        _val_f1 = f1_score(val_targ, val_predict, labels=index, average=None)
+        _val_recall = recall_score(val_targ, val_predict, labels=index, average=None)
+        _val_precision = precision_score(val_targ, val_predict, labels=index, average=None) # possibly something besides none (binary, etc)
         _val_f1_overall = f1_score(val_targ, val_predict)
         _val_recall_overall = recall_score(val_targ, val_predict)
         _val_precision_overall = precision_score(val_targ, val_predict)
@@ -50,6 +55,7 @@ class Metrics(Callback):
         self.val_precisions_overall.append(_val_precision_overall)
         print(f"— val_f1: {_val_f1}, val_precision: {_val_precision} — val_recall {_val_recall}")
         return
+
 
 
 class Train:
@@ -96,8 +102,8 @@ class Train:
             monitor = 'val_binary_accuracy'
 
         early = EarlyStopping(monitor=monitor, min_delta=0, patience=5, verbose=1, mode='auto')
-        checkpoint_path = '{}/checkpoints.best.h5'.format(output_dir)
-        checkpoint = ModelCheckpoint(checkpoint_path, monitor=monitor, verbose=1, save_best_only=True, mode='max')
+        checkpoint_path = '{}/best.weights.hdf5'.format(output_dir)
+        checkpoint = ModelCheckpoint(checkpoint_path, monitor=monitor, verbose=1, save_best_only=True, mode='max', save_freq=epochs)
         if os.path.exists(checkpoint_path):
             print('Loading model weights from {}'.format(checkpoint_path))
             model.load_weights(checkpoint_path)
@@ -122,7 +128,7 @@ class Train:
                                            use_multiprocessing=True,
                                            validation_data=validation_generator,
                                            validation_steps=validation_steps,
-                                           callbacks=[tensorboard, checkpoint, early,
+                                           callbacks=[tensorboard, checkpoint, early, m,
                                                       WandbCallback(data_type="image", labels=labels)])# , schedule])
 
         if save_model:
