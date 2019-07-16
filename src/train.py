@@ -16,16 +16,19 @@ from argparser import ArgParser
 import utils
 import numpy as np
 from threading import Thread
-from sklearn.metrics import f1_score, precision_score, recall_score
-
+import sklearn
+import scipy
 
 class Metrics(Callback):
 
-    def __init__(self, labels):
+    def __init__(self, val_data, batch_size, labels):
         self.labels = labels
         self.epoch_count = 0
+        self.validation_data = val_data
+        self.batch_size = batch_size
 
     def on_train_begin(self, logs={}):
+        print(self.validation_data)
         self.val_f1s = []
         self.val_recalls = []
         self.val_precisions = []
@@ -34,26 +37,39 @@ class Metrics(Callback):
         self.val_precisions_overall = []
 
     def on_epoch_end(self, epoch, logs={}):
-        print("made it to end of epoch callback, printing model and class attributes\n\n")
-        print(dir(self))
-        print(dir(self.model), '\n')
+        print('End Of Epoch Report:')
         self.epoch_count += 1
-        val_predict = (np.asarray(self.model.predict(self.model.validation_data[0]))).round()
-        index = np.arrange(len(self.labels))
-        val_targ = self.model.validation_data[1]
-        _val_f1 = f1_score(val_targ, val_predict, labels=index, average=None)
-        _val_recall = recall_score(val_targ, val_predict, labels=index, average=None)
-        _val_precision = precision_score(val_targ, val_predict, labels=index, average=None) # possibly something besides none (binary, etc)
-        _val_f1_overall = f1_score(val_targ, val_predict)
-        _val_recall_overall = recall_score(val_targ, val_predict)
-        _val_precision_overall = precision_score(val_targ, val_predict)
+
+        batches = len(self.validation_data)
+        total = batches * self.batch_size
+        index = np.arange(len(self.labels))
+
+        val_predict = np.zeros((total, 1))
+        val_true = np.zeros(total)
+
+        for batch in range(batches):
+            xVal, yVal = next(self.validation_data)
+            """
+            batch * self.batch_size
+            if its 4 images per batch and 100 images, that means 
+            """
+            val_predict[batch * self.batch_size : (batch+1) * self.batch_size] = scipy.stats.mode(np.asarray(self.model.predict_classes(xVal)))
+            val_true[batch * self.batch_size : (batch+1) * self.batch_size] = yVal
+
+        _val_f1 = sklearn.metrics.f1_score(val_true, val_predict, labels=index, average=None)
+        _val_recall = sklearn.metrics.recall_score(val_true, val_predict, labels=index, average=None)
+        _val_precision = sklearn.metrics.precision_score(val_true, val_predict, labels=index, average=None) # possibly something besides none (binary, etc)
+        _val_f1_overall = sklearn.metrics.f1_score(val_true, val_predict)
+        _val_recall_overall = sklearn.metrics.recall_score(val_true, val_predict)
+        _val_precision_overall = sklearn.metrics.precision_score(val_true, val_predict)
+
         self.val_f1s.append(_val_f1)
         self.val_recalls.append(_val_recall)
         self.val_precisions.append(_val_precision)
         self.val_f1s_overall.append(_val_f1_overall)
         self.val_recalls_overall.append(_val_recall_overall)
         self.val_precisions_overall.append(_val_precision_overall)
-        print(f"— val_f1: {_val_f1}, val_precision: {_val_precision} — val_recall {_val_recall}")
+        print(f'Epoch: {self.epoch_count} val_f1: {_val_f1}, val_precision: {_val_precision} — val_recall {_val_recall}')
         return
 
 
@@ -114,7 +130,7 @@ class Train:
                                  lr_decay=0.9,
                                  cycle_length=5,
                                  mult_factor=1.5)'''
-        m = Metrics(labels)
+        m = Metrics(labels=labels, val_data=validation_generator, batch_size=args.batch_size)
         # add m to list of callbacks
         # callbacks is a list of pointers to functions that get called at end of epoch
         """
