@@ -184,7 +184,7 @@ class Train:
             thread1 = Thread(target=extract_tar())
             thread1.start()
             thread1.join()
-        labels = list(filter(('.DS_Store').__ne__, list(filter(('._.DS_Store').__ne__, os.listdir(output_dir+'/train')))))
+        labels = list(filter(('.DS_Store').__ne__, list(filter('._.DS_Store'.__ne__, os.listdir(output_dir+'/train')))))
 
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
         train = Train()

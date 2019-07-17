@@ -1,7 +1,7 @@
 import tensorflow.keras
 import numpy as np
 import sklearn.metrics
-
+import threading
 
 class Metrics(tensorflow.keras.callbacks.Callback):
 
@@ -10,6 +10,7 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         self.epoch_count = 0
         self.validation_data = val_data
         self.batch_size = batch_size
+        self.val_count = 0
 
     def on_train_begin(self, logs={}):
         self.val_f1s = []
@@ -36,27 +37,19 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         print (class_map)
 
         for batch in range(batches):
-            try:
-                xVal, yVal = next(self.validation_data)
-            except StopIteration:
-                break
-
-            print(f'xVal is the data from validation_generator, yVal is \n{yVal}')
-            print(f'Printing the model predict:\n{np.asarray(self.model.predict(xVal)).round()}')
-            print(f'\nPrinting the model predict classes:\n{self.model.predict_classes(xVal)}')
-            for i in range(self.batch_size):
-                val_predict[batch * self.batch_size + i] = np.asarray(self.model.predict_classes(xVal))[i]
-                val_true[batch * self.batch_size + i] = np.argmax(yVal, axis=1)[i]
-                if len(np.argmax(yVal, axis=1)) < self.batch_size and len(np.argmax(yVal, axis=1)) == i+1:
-                    val_predict = val_predict[:total-i-1]
-                    val_true = val_true[:total-i-1]
-                    break
+            thread1 = threading.Thread(target=self.parse_batch(batch, val_true, val_predict))
+            thread1.start()
+            thread1.join()
             # for true_value in yVal:
             #    val_true[batch] = np.argmax()
             # print(scipy.stats.mode(np.asarray(self.model.predict_classes(xVal))))
             # val_predict[batch * self.batch_size : (batch+1) * self.batch_size] = scipy.stats.mode(np.asarray(self.model.predict_classes(xVal)))
             #val_true[batch * self.batch_size : (batch+1) * self.batch_size] = yVal
-
+        print(val_predict, val_true, sep='\n')
+        val_predict = val_predict[:self.val_count]
+        val_true = val_true[:self.val_count]
+        print('trimmed lists', val_predict, val_true, sep='\n')
+        self.val_count = 0
         # print(sklearn.metrics.classification_report(
         #     val_predict,
         #     val_true,
@@ -78,3 +71,21 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         # self.val_precisions_overall.append(_val_precision_overall)
         # print(f'Epoch: {self.epoch_count} val_f1: {_val_f1}, val_precision: {_val_precision} — val_recall {_val_recall}')
         return
+
+    def parse_batch(self, batch, val_true, val_predict):
+        try:
+            xVal, yVal = next(self.validation_data)
+        except StopIteration:
+            return
+
+        print(f'Actual Labels\n{yVal}')
+        print(f'Printing the model predictions:\n{np.asarray(self.model.predict(xVal)).round()}')
+        print(f'Printing the model predicted classes:\n{self.model.predict_classes(xVal)}\n')
+        for i in range(self.batch_size):
+            try:
+                val_predict[batch * self.batch_size + i] = np.asarray(self.model.predict_classes(xVal))[i]
+                val_true[batch * self.batch_size + i] = np.argmax(yVal, axis=1)[i]
+                self.val_count += 1
+            except IndexError:
+                print('Caught Index Error, reached end of validation data')
+                return
