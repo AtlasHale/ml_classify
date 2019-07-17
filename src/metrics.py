@@ -2,6 +2,8 @@ import tensorflow.keras
 import numpy as np
 import sklearn.metrics
 import threading
+import wandb
+
 
 class Metrics(tensorflow.keras.callbacks.Callback):
 
@@ -11,6 +13,8 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         self.validation_data = val_data
         self.batch_size = batch_size
         self.val_count = 0
+        self.trim_start = 0
+        self.trim_end = 0
 
     def on_train_begin(self, logs={}):
         self.val_f1s = []
@@ -34,31 +38,30 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         for label in self.labels:
             class_map[label_index] = label
             label_index += 1
-        print (class_map)
-
+        print(class_map)
+        re_map = {label:index for index, label in class_map.items()}
+        print(re_map)
         for batch in range(batches):
             thread1 = threading.Thread(target=self.parse_batch(batch, val_true, val_predict))
             thread1.start()
             thread1.join()
-            # for true_value in yVal:
-            #    val_true[batch] = np.argmax()
-            # print(scipy.stats.mode(np.asarray(self.model.predict_classes(xVal))))
-            # val_predict[batch * self.batch_size : (batch+1) * self.batch_size] = scipy.stats.mode(np.asarray(self.model.predict_classes(xVal)))
-            #val_true[batch * self.batch_size : (batch+1) * self.batch_size] = yVal
-        print(val_predict, val_true, sep='\n')
-        val_predict = val_predict[:self.val_count]
-        val_true = val_true[:self.val_count]
+
+        val_predict = np.delete(val_predict, np.s_[self.trim_start:self.trim_end])
+        val_true = np.delete(val_true, np.s_[self.trim_start:self.trim_end])
         print('trimmed lists', val_predict, val_true, sep='\n')
         self.val_count = 0
-        # print(sklearn.metrics.classification_report(
-        #     val_predict,
-        #     val_true,
-        #     labels=[i for i in range(len(self.labels))],
-        #     target_names=self.labels))
+        label_predict = [class_map[i] for i in val_predict]
+        label_true = [class_map[i] for i in val_true]
+        print('class lists', label_predict, label_true, sep='\n')
+        print(sklearn.metrics.classification_report(
+            val_predict,
+            val_true,
+            labels=[i for i in range(len(self.labels))],
+            target_names=self.labels))
         # TODO: fix sklearn metrics to have correct label and average params
-        # _val_f1 = sklearn.metrics.f1_score(val_true, val_predict, labels=self.labels, average='weighted')
-        # _val_recall = sklearn.metrics.recall_score(val_true, val_predict, labels=self.labels, average='weighted')
-        # _val_precision = sklearn.metrics.precision_score(val_true, val_predict, labels=self.labels, average='weighted') # possibly something besides none (binary, etc)
+        _val_f1 = sklearn.metrics.f1_score(label_true, label_predict, labels=self.labels, average=None)
+        _val_recall = sklearn.metrics.recall_score(label_true, label_predict, labels=self.labels, average=None)
+        _val_precision = sklearn.metrics.precision_score(label_true, label_predict, labels=self.labels, average=None) # possibly something besides none (binary, etc)
         # _val_f1_overall = sklearn.metrics.f1_score(val_true, val_predict, labels=self.labels)
         # _val_recall_overall = sklearn.metrics.recall_score(val_true, val_predict, labels=self.labels,)
         # _val_precision_overall = sklearn.metrics.precision_score(val_true, val_predict, labels=self.labels,)
@@ -69,18 +72,26 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         # self.val_f1s_overall.append(_val_f1_overall)
         # self.val_recalls_overall.append(_val_recall_overall)
         # self.val_precisions_overall.append(_val_precision_overall)
-        # print(f'Epoch: {self.epoch_count} val_f1: {_val_f1}, val_precision: {_val_precision} — val_recall {_val_recall}')
+        print(f'Epoch:\n{self.epoch_count}\nval_f1: {_val_f1}\nval_precision: {_val_precision}\nval_recall {_val_recall}')
+        for label in self.labels:
+            f1_log = {label+'_f1':_val_f1[re_map[label]]}
+            precision_log = {label+'_precision':_val_precision[re_map[label]]}
+            recall_log = {label+'_recall': _val_recall[re_map[label]]}
+            wandb.log(f1_log)
+            wandb.log(precision_log)
+            wandb.log(recall_log)
         return
 
     def parse_batch(self, batch, val_true, val_predict):
         try:
             xVal, yVal = next(self.validation_data)
+            print(yVal)
         except StopIteration:
             return
 
-        print(f'Actual Labels\n{yVal}')
-        print(f'Printing the model predictions:\n{np.asarray(self.model.predict(xVal)).round()}')
-        print(f'Printing the model predicted classes:\n{self.model.predict_classes(xVal)}\n')
+        # print(f'Actual Labels\n{yVal}')
+        # print(f'Printing the model predictions:\n{np.asarray(self.model.predict(xVal)).round()}')
+        # print(f'Printing the model predicted classes:\n{self.model.predict_classes(xVal)}\n')
         for i in range(self.batch_size):
             try:
                 val_predict[batch * self.batch_size + i] = np.asarray(self.model.predict_classes(xVal))[i]
@@ -88,4 +99,6 @@ class Metrics(tensorflow.keras.callbacks.Callback):
                 self.val_count += 1
             except IndexError:
                 print('Caught Index Error, reached end of validation data')
+                self.trim_start = self.val_count
+                self.trim_end = self.trim_start + self.batch_size - i
                 return

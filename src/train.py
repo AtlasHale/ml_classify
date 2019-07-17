@@ -117,7 +117,7 @@ class Train:
         return model.evaluate(x_test, y_test)
 
     def get_validation_loss(self, hist):
-        val_loss = hist.history['valz_loss']
+        val_loss = hist.history['val_loss']
         val_loss_value = val_loss[len(val_loss) - 1]
         return val_loss_value
 
@@ -185,7 +185,7 @@ class Train:
             thread1.start()
             thread1.join()
         labels = list(filter(('.DS_Store').__ne__, list(filter('._.DS_Store'.__ne__, os.listdir(output_dir+'/train')))))
-
+        labels.sort()
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
         train = Train()
 
