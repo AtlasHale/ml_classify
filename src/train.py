@@ -64,8 +64,6 @@ class Metrics(Callback):
             for i in range(self.batch_size):
                 val_predict[batch * self.batch_size + i] = np.asarray(self.model.predict_classes(xVal))[i]
                 val_true[batch * self.batch_size + i] = np.argmax(yVal, axis=1)[i]
-                print(val_predict)
-                print(val_true)
                 if len(np.argmax(yVal, axis=1)) < self.batch_size and len(np.argmax(yVal, axis=1)) == i+1:
                     val_predict = val_predict[:total-i-1]
                     val_true = val_true[:total-i-1]
@@ -75,8 +73,6 @@ class Metrics(Callback):
             # print(scipy.stats.mode(np.asarray(self.model.predict_classes(xVal))))
             # val_predict[batch * self.batch_size : (batch+1) * self.batch_size] = scipy.stats.mode(np.asarray(self.model.predict_classes(xVal)))
             #val_true[batch * self.batch_size : (batch+1) * self.batch_size] = yVal
-        print(val_predict)
-        print(val_true)
 
         print(sklearn.metrics.classification_report(
             val_predict,
