@@ -10,92 +10,12 @@ from keras import optimizers
 from keras import metrics
 from tensorflow.python.keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, Callback
 from transfer_model import TransferModel
+from metrics import Metrics
 import wandb
 from wandb.keras import WandbCallback
 from argparser import ArgParser
 import utils
-import numpy as np
 from threading import Thread
-import sklearn.metrics
-
-class Metrics(Callback):
-
-    def __init__(self, val_data, batch_size, labels):
-        self.labels = labels
-        self.epoch_count = 0
-        self.validation_data = val_data
-        self.batch_size = batch_size
-
-    def on_train_begin(self, logs={}):
-        print(self.validation_data)
-        self.val_f1s = []
-        self.val_recalls = []
-        self.val_precisions = []
-        self.val_f1_overall = []
-        self.val_recalls_overall = []
-        self.val_precisions_overall = []
-
-    def on_epoch_end(self, epoch, logs={}):
-        print(f'End Of Epoch {self.epoch_count} Report:\n')
-        self.epoch_count += 1
-        batches = len(self.validation_data)
-        total = batches * self.batch_size
-
-        print(total)
-        val_predict = np.zeros(total)
-        val_true = np.zeros(total)
-        class_map = {}
-        label_index = 0
-        for label in self.labels:
-            class_map[label_index] = label
-            label_index += 1
-        print (class_map)
-
-        for batch in range(batches):
-            try:
-                xVal, yVal = next(self.validation_data)
-            except StopIteration:
-                break
-            """
-            batch * self.batch_size
-            if its 4 images per batch and 100 images, that means 
-            """
-
-            for i in range(self.batch_size):
-                val_predict[batch * self.batch_size + i] = np.asarray(self.model.predict_classes(xVal))[i]
-                val_true[batch * self.batch_size + i] = np.argmax(yVal, axis=1)[i]
-                if len(np.argmax(yVal, axis=1)) < self.batch_size and len(np.argmax(yVal, axis=1)) == i+1:
-                    val_predict = val_predict[:total-i-1]
-                    val_true = val_true[:total-i-1]
-                    break
-            # for true_value in yVal:
-            #    val_true[batch] = np.argmax()
-            # print(scipy.stats.mode(np.asarray(self.model.predict_classes(xVal))))
-            # val_predict[batch * self.batch_size : (batch+1) * self.batch_size] = scipy.stats.mode(np.asarray(self.model.predict_classes(xVal)))
-            #val_true[batch * self.batch_size : (batch+1) * self.batch_size] = yVal
-
-        print(sklearn.metrics.classification_report(
-            val_predict,
-            val_true,
-            labels=[i for i in range(len(self.labels))],
-            target_names=self.labels))
-        # TODO: fix sklearn metrics to have correct label and average params
-        # _val_f1 = sklearn.metrics.f1_score(val_true, val_predict, labels=self.labels, average='weighted')
-        # _val_recall = sklearn.metrics.recall_score(val_true, val_predict, labels=self.labels, average='weighted')
-        # _val_precision = sklearn.metrics.precision_score(val_true, val_predict, labels=self.labels, average='weighted') # possibly something besides none (binary, etc)
-        # _val_f1_overall = sklearn.metrics.f1_score(val_true, val_predict, labels=self.labels)
-        # _val_recall_overall = sklearn.metrics.recall_score(val_true, val_predict, labels=self.labels,)
-        # _val_precision_overall = sklearn.metrics.precision_score(val_true, val_predict, labels=self.labels,)
-        #
-        # self.val_f1s.append(_val_f1)
-        # self.val_recalls.append(_val_recall)
-        # self.val_precisions.append(_val_precision)
-        # self.val_f1s_overall.append(_val_f1_overall)
-        # self.val_recalls_overall.append(_val_recall_overall)
-        # self.val_precisions_overall.append(_val_precision_overall)
-        # print(f'Epoch: {self.epoch_count} val_f1: {_val_f1}, val_precision: {_val_precision} — val_recall {_val_recall}')
-        return
-
 
 
 class Train:
@@ -106,7 +26,7 @@ class Train:
     def compile_and_fit_model(self, model, fine_tune_at, train_generator, validation_generator, epochs,
                               batch_size, loss, optimizer, lr, labels,
                               metrics=metrics.categorical_accuracy,
-                              save_model=False, output_dir='/tmp'):
+                              save_model=False, output_dir=os.environ.get('PROJECT_HOME')):
 
         print('Writing TensorFlow events locally to tensorboard_logging')
         tensorboard = TensorBoard(log_dir=os.environ.get('PROJECT_HOME')+'/tensorboard_logging')
@@ -143,7 +63,7 @@ class Train:
 
         early = EarlyStopping(monitor=monitor, min_delta=0, patience=5, verbose=1, mode='auto')
         checkpoint_path = '{}/best.weights.hdf5'.format(output_dir)
-        checkpoint = ModelCheckpoint(checkpoint_path, monitor=monitor, verbose=1, save_best_only=True, mode='max', save_freq=epochs)
+        checkpoint = ModelCheckpoint(checkpoint_path, monitor=monitor, verbose=1, save_best_only=True, mode='max')
         if os.path.exists(checkpoint_path):
             print('Loading model weights from {}'.format(checkpoint_path))
             model.load_weights(checkpoint_path)
@@ -169,7 +89,9 @@ class Train:
                                            validation_data=validation_generator,
                                            validation_steps=validation_steps,
                                            callbacks=[tensorboard, checkpoint, early, m,
-                                                      WandbCallback(data_type="image", labels=labels)])# , schedule])
+                                                      WandbCallback(data_type="image",
+                                                                    validation_data=validation_generator,
+                                                                    labels=labels)])# , schedule])
 
         if save_model:
             model_dir = self.get_directory_path("keras_models")
@@ -195,7 +117,7 @@ class Train:
         return model.evaluate(x_test, y_test)
 
     def get_validation_loss(self, hist):
-        val_loss = hist.history['val_loss']
+        val_loss = hist.history['valz_loss']
         val_loss_value = val_loss[len(val_loss) - 1]
         return val_loss_value
 
