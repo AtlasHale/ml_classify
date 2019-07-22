@@ -2,15 +2,36 @@ import os
 import tarfile
 import shutil
 from google.cloud import storage
+import threading
 
 
-def unpack(out_dir, tar_file, tar_bucket=None):
-    if 'tar.gz' in tar_file:
-        download_gs(tar_file, tar_bucket, os.path.join(out_dir, 'data'))
-        print('Unpacking {}'.format(tar_file))
+def unpack(out_dir, tar_file, learning_curve=False):
+    """
+    Function to instantiate data sets from tar files
+    :param learning_curve: used to indicate if the tar file was made by learning_curve.py
+    :param out_dir: output directory to extract tar file to
+    :param tar_file: tar file name as it shows in the a cloud bucket
+    :return: None, file should be extracted into out_dir
+    """
+    if 'tar.gz' in tar_file and learning_curve is True:
+        download_gs(tar_file=tar_file, tar_bucket=os.environ.get('TAR_BUCKET'), out_dir=os.path.join(out_dir, 'data'))
+        print('Unpacking {} to {}'.format(tar_file, out_dir))
         tar = tarfile.open(os.path.join(out_dir, 'data', tar_file))
         tar.extractall(path=os.path.join(out_dir, 'data'))
         tar.close()
+    elif 'tar.gz' in tar_file:
+        def threaded_extract(tar_file):
+            print('Unpacking in a thread {} to {}'.format(tar_file, out_dir))
+            tar = tarfile.open(os.path.join(out_dir, 'data', tar_file))
+            tar.extractall(path=os.path.join(out_dir, 'data'))
+            tar.close()
+            print('finished unpacking thread')
+        thread1 = threading.Thread(target=threaded_extract(tar_file))
+        thread1.start()
+        thread1.join()
+        exit(0)
+        shutil.rmtree(os.path.join(out_dir, 'data', 'train'))
+        os.rename(os.path.join(out_dir, 'data', 'temp'), os.path.join(out_dir, 'data', 'train'))
     elif os.path.isfile(tar_file) and 'tar.gz' in tar_file and 's3' not in tar_file:
         print('Unpacking {}'.format(tar_file))
         tar = tarfile.open(tar_file)
@@ -29,14 +50,21 @@ def unpack(out_dir, tar_file, tar_bucket=None):
         tar.close()
 
 
+def has_number(tar_file):
+    return any(letter.isdigit() for letter in tar_file)
+
+
 def download_gs(tar_file, tar_bucket, out_dir):
+    """
+    Downloading from google storage buckets
+    :param tar_file: tar file name in bucket. If location is gs://mbari-bucket/train.tar.gz, tar_file = 'train.tar.gz'
+    :param tar_bucket: tar bucket to look in. If location is gs://mbari-bucket/train.tar.gz, tar_bucket = 'mbari-bucket'
+    :param out_dir: output directory, usually something like a /data folder.
+    :return: None, tar file should be downloaded from cloud to local.
+    """
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(tar_bucket)
     blob = bucket.blob(tar_file)
-    if 'train' in tar_file:
-        open('../data/train.tar.gz', 'w').close()
-    if 'val' in tar_file:
-        open('../data/val.tar.gz', 'w').close()
     out_file = os.path.join(out_dir, tar_file)
     blob.download_to_filename(out_file)
 
@@ -87,4 +115,3 @@ def download_s3(source_file, target_dir):
             print(e)
     except Exception as e:
         raise(e)
-
