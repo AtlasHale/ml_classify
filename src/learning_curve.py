@@ -10,6 +10,9 @@ import random
 import shutil
 import tarfile
 import wandb
+import matplotlib
+import numpy as np
+
 
 def subsample(subset_percentage, train_dir):
     file_list = []
@@ -49,6 +52,26 @@ def subsample(subset_percentage, train_dir):
 
     return out_tar, len(file_list)
 
+
+def sliced_data(subset_percentage, project_home):
+    classes = [folder for folder in os.listdir(os.path.join(project_home, 'data', 'train'))]
+    for folder in classes:
+        os.mkdir(os.path.join(project_home, 'data', 'temp', folder))
+        image_number = subset_percentage/100*len(os.listdir(os.path.join(project_home, 'data', 'train', folder)))
+        images = [image for image in os.listdir(os.path.join(project_home, 'data', 'train', folder))]
+        uniques = set()
+        for i in range(int(image_number)):
+            index = np.random.randint(0, len(images))
+            while index in uniques:
+                index = np.random.randint()
+            dst = os.path.join(project_home, 'data', 'temp', folder)
+            src = os.path.join(project_home, 'data', 'train', folder, images[index])
+            shutil.copy(src, dst)
+    with tarfile.open(os.path.join(project_home, 'data', str(subset_percentage)+'_train.tar.gz'), 'w:gz') as tar:
+        tar.add(os.path.join(project_home, 'data', 'temp'), arcname=os.path.basename(os.path.join(project_home, 'data', 'temp')))
+    tar.close()
+
+
 if __name__ == '__main__':
 
     # train the algorithm on incrementally increasing amounts of training data
@@ -71,22 +94,33 @@ if __name__ == '__main__':
     parser.log_params(wandb)
 
     # unpack original images
-    output_dir = tempfile.mkdtemp()
-    train_dir = os.path.join(output_dir, 'train')
-    val_dir = os.path.join(output_dir, 'val')
-    utils.unpack(train_dir, args.train_tar)
-    utils.unpack(val_dir, args.val_tar)
+    project_home = os.environ.get('PROJECT_HOME')
+    if not os.path.exists(os.path.join(project_home, 'data')):
+        os.mkdir(os.path.join(project_home, 'data'))
+
+    utils.unpack(project_home, args.train_tar, learning_curve=True)
+    utils.unpack(project_home, args.val_tar, learning_curve=True)
+
+    train_dir = os.path.join(project_home, 'data', 'train')
+    val_dir = os.path.join(project_home, 'data', 'val')
 
     for p in percent:
         # subsample
-        subset_train_tar, size = subsample(p, train_dir)
-        print(f'Total images {size} in training data for subsample {p} %%')
+        temp_dir = os.path.join(project_home, 'data', 'temp')
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        if not os.path.exists(temp_dir):
+            os.mkdir(temp_dir)
 
-        # replace training with subset
-        args.train_tar = subset_train_tar
+        sliced_data(p, project_home)
+        # subset_train_tar = temp_dir
+        size = p
 
+        # # replace training with subset
+        args.train_tar = os.path.join(project_home, 'data', 'temp.tar.gz')
+        print(args.train_tar)
         # train and store history of results
-        hist_dict[p] =  Train().train_model(args)
+        hist_dict[p] = Train().train_model(args)
         training_size[p] = size
 
     # plot the last error of each training cycle and log as object in wandb
@@ -94,10 +128,10 @@ if __name__ == '__main__':
     for percent, history in hist_dict.items():
         train_error = 1 - history.history['acc'][-1]
         val_error = 1 - history.history['val_acc'][-1]
-        plt.plot(training_size[percent], train_error, 'ro')
-        plt.plot(training_size[percent], val_error,'bo')
-    plt.title('Learning curve')
-    plt.xlabel('Training set size')
-    plt.ylabel('Error')
-    plt.legend()
-    wandb.log({"learning curve": plt})
+        matplotlib.plot(training_size[percent], train_error, 'ro')
+        matplotlib.plot(training_size[percent], val_error,'bo')
+    matplotlib.title('Learning curve')
+    matplotlib.xlabel('Training set size')
+    matplotlib.ylabel('Error')
+    matplotlib.legend()
+    wandb.log({"learning curve": matplotlib})
