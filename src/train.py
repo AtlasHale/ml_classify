@@ -162,8 +162,7 @@ class Train:
                                                                    shear_range=args.shear_range
                                                                    )
         project_home = os.environ.get('PROJECT_HOME')
-        if not os.path.exists(os.path.join(project_home, 'data')):
-            os.mkdir(os.path.join(project_home, 'data'))
+
         output_dir = os.path.join(project_home, 'data')
         train_dir = os.path.join(output_dir, args.train_tar.split('.')[0])
         val_dir = os.path.join(output_dir, args.val_tar.split('.')[0])

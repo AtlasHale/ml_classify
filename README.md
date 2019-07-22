@@ -1,17 +1,22 @@
-add GOOGLE_APPLICATION_CREDENTIALS to env      
-https://cloud.google.com/storage/docs/reference/libraries to find how to generate API key
+Steps to run should be:
 
-example environment variables:    
-WANDB_RUN_GROUP=chale    
-PROJECT_HOME=/Users/chale/Desktop/ml_classify    
-GOOGLE_APPLICATION_CREDENTIALS=/Users/chale/Desktop/ml_classify/credentials.json
-BUCKET_NAME=data_bucket_mbari    
-TAR_BUCKET=s2019_tar_mbari    
+cd ~  
+git clone https://github.com/AtlasHale/ml_classify     
+cd ml_classify    
+Upload google service credentials as credentials.json   
+mv ~/credentials.json ~/ml_classify/  
+https://cloud.google.com/storage/docs/reference/libraries to find how to generate API key   
 
-    
-To run:   
-``   
-python3 src/train.py --horizontal_flip True --augment_range 0.2 --train_tar 
-train.tar.gz --val_tar val.tar.gz --lr 0.001  --base_model inceptionv3 --project fathomnet --batch_size 4 --epoch 5
-``
+
+
+Export project home as $PWD     
+Export tar bucket as name of bucket with tar files      
+Export wandb run group, user, api key   
+Export google service credentials location ($PWD/credentials.json)  
+
+Run training    
+python3 src/train.py --horizontal_flip True --augment_range 0.2 --train_tar train.tar.gz --val_tar val.tar.gz --lr 0.001 --base_model inceptionv3 --project inception_training --batch_size 4 --epoch 50
+
+Run learning rate   
+python3 src/learning_curve.py --horizontal_flip True --augment_range 0.2 --train_tar 100_train.tar.gz --val_tar val.tar.gz --lr 0.001 --base_model inceptionv3 --project inception_learning_curve --batch_size 4 --epoch 10
 
