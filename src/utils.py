@@ -13,7 +13,7 @@ def unpack(out_dir, tar_file, learning_curve=False):
     :param tar_file: tar file name as it shows in the a cloud bucket
     :return: None, file should be extracted into out_dir
     """
-    if 'tar.gz' in tar_file and learning_curve is True:
+    if 'tar.gz' in tar_file and learning_curve is False:
         download_gs(tar_file=tar_file, tar_bucket=os.environ.get('TAR_BUCKET'), out_dir=os.path.join(out_dir, 'data'))
         print('Unpacking {} to {}'.format(tar_file, out_dir))
         tar = tarfile.open(os.path.join(out_dir, 'data', tar_file))

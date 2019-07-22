@@ -171,6 +171,7 @@ class Train:
                                                                    )
         project_home = os.environ.get('PROJECT_HOME')
         if not os.path.exists(os.path.join(project_home, 'data')):
+            print('data didnt exist, making it now')
             os.mkdir(os.path.join(project_home, 'data'))
         output_dir = os.path.join(project_home, 'data')
         train_dir = os.path.join(output_dir, 'train')
@@ -178,8 +179,8 @@ class Train:
         if 'train' not in os.listdir(output_dir):
             def extract_tar():
                 tar_bucket = os.environ.get('TAR_BUCKET')
-                utils.unpack(project_home, args.train_tar, tar_bucket)
-                utils.unpack(project_home, args.val_tar, tar_bucket)
+                utils.unpack(project_home, args.train_tar)
+                utils.unpack(project_home, args.val_tar)
 
             thread1 = Thread(target=extract_tar())
             thread1.start()
