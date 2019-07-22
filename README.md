@@ -4,6 +4,7 @@ cd ~
 git clone https://github.com/AtlasHale/ml_classify     
 cd ml_classify    
 Upload google service credentials as credentials.json   
+mv ~/credentials.json ~/ml_classify/  
 https://cloud.google.com/storage/docs/reference/libraries to find how to generate API key   
 
 
