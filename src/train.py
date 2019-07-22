@@ -44,6 +44,7 @@ class Train:
 
         if optimizer == 'rmsprop':
                 opt = optimizers.RMSprop(lr=lr)
+                opt = optimizers.RMSprop(lr=lr)
                 model.compile(optimizer=opt,
                               loss=loss,
                               metrics=[metrics])
@@ -74,7 +75,7 @@ class Train:
                                  lr_decay=0.9,
                                  cycle_length=5,
                                  mult_factor=1.5)'''
-        m = Metrics(labels=labels, val_data=validation_generator, batch_size=args.batch_size)
+        m = Metrics(labels=labels, val_data=validation_generator, batch_size=batch_size)
         # add m to list of callbacks
         # callbacks is a list of pointers to functions that get called at end of epoch
         """
@@ -98,15 +99,6 @@ class Train:
             self.keras_save_model(model, model_dir)
 
         return history
-
-    def keras_save_model(self, model, model_dir='/tmp'):
-        """
-        Convert Keras estimator to TensorFlow
-        :type model_dir: object
-        """
-        print("Model is saved locally to %s" % model_dir)
-        mlflow.keras.save_model(model, model_dir)
-
 
     def evaluate_model(self,model, x_test, y_test):
         """
@@ -173,13 +165,13 @@ class Train:
         if not os.path.exists(os.path.join(project_home, 'data')):
             os.mkdir(os.path.join(project_home, 'data'))
         output_dir = os.path.join(project_home, 'data')
-        train_dir = os.path.join(output_dir, 'train')
-        val_dir = os.path.join(output_dir, 'val')
+        train_dir = os.path.join(output_dir, args.train_tar.split('.')[0])
+        val_dir = os.path.join(output_dir, args.val_tar.split('.')[0])
         if 'train' not in os.listdir(output_dir):
             def extract_tar():
                 tar_bucket = os.environ.get('TAR_BUCKET')
-                utils.unpack(project_home, args.train_tar, tar_bucket)
-                utils.unpack(project_home, args.val_tar, tar_bucket)
+                utils.unpack(project_home, args.train_tar)
+                utils.unpack(project_home, args.val_tar)
 
             thread1 = Thread(target=extract_tar())
             thread1.start()
