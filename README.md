@@ -1,6 +1,6 @@
 # Keras Classification of Deep Sea Imagery
 This repository contains code which can be used to generate a keras model to predict classes when given training data. The code utilizes transfer learning, working by using pre-trained deep neural net models such as inception and resnet, and aplpying them to a specific data set. This repository is primarily set up to be run on a Google Compute VM, however simple adjustments can be made to run on AWS, other cloud services, or locally.
-
+##
 ### Building Google Cloud VM Environment
 The steps to setting up a google cloud environment are the following:
 * Create a cloud storage bucket
@@ -11,16 +11,21 @@ The steps to setting up a google cloud environment are the following:
 * Clone Repository
 * Update Environment Variables
 * Install Required modules
-
+##
 ### Running Inference 
 To run general Inference with basic metrics:
 ```
-python3 src/train.py --horizontal_flip True --augment_range 0.2 --train_tar train.tar.gz --val_tar val.tar.gz --lr 0.001 --base_model inceptionv3 --project inception_training --batch_size 4 --epoch 50
+python3 src/train.py --horizontal_flip True --augment_range 0.2 \
+--train_tar train.tar.gz --val_tar val.tar.gz --lr 0.001 --base_model inceptionv3 \
+--project inception_training --batch_size 4 --epoch 50
 ```
 To run incrementally increasing the size of the training data set per class:
 ```
-python3 src/learning_curve.py --horizontal_flip True --augment_range 0.2 --train_tar 100_train.tar.gz --val_tar val.tar.gz --lr 0.001 --base_model inceptionv3 --project inception_learning_curve --batch_size 4 --epoch 10
+python3 src/learning_curve.py --horizontal_flip True --augment_range 0.2 \
+--train_tar 100_train.tar.gz --val_tar val.tar.gz --lr 0.001 --base_model inceptionv3 \
+--project inception_learning_curve --batch_size 4 --epoch 10
 ```
+##
 cd ~  
 git clone https://github.com/AtlasHale/ml_classify     
 cd ml_classify    
