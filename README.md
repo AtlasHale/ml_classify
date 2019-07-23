@@ -20,3 +20,11 @@ python3 src/train.py --horizontal_flip True --augment_range 0.2 --train_tar trai
 Run learning rate   
 python3 src/learning_curve.py --horizontal_flip True --augment_range 0.2 --train_tar 100_train.tar.gz --val_tar val.tar.gz --lr 0.001 --base_model inceptionv3 --project inception_learning_curve --batch_size 4 --epoch 10
 
+
+Google Cloud Environment Set-Up     
+Go to https://cloud.google.com/     
+In the upper right, sign in to your google account. 
+In the upper right, click console.  
+Create a new project by selecting the drop down menu in the upper left. 
+A pop-up window will have a new projects button in the upper right.     
+Select your new project from the dropdown menu to make it your active project. 
