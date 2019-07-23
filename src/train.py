@@ -166,15 +166,14 @@ class Train:
         output_dir = os.path.join(project_home, 'data')
         train_dir = os.path.join(output_dir, args.train_tar.split('.')[0])
         val_dir = os.path.join(output_dir, args.val_tar.split('.')[0])
-        if 'train' not in os.listdir(output_dir):
-            def extract_tar():
-                tar_bucket = os.environ.get('TAR_BUCKET')
-                utils.unpack(project_home, args.train_tar)
-                utils.unpack(project_home, args.val_tar)
+        def extract_tar():
+            tar_bucket = os.environ.get('TAR_BUCKET')
+            utils.unpack(project_home, args.train_tar)
+            utils.unpack(project_home, args.val_tar)
 
-            thread1 = Thread(target=extract_tar())
-            thread1.start()
-            thread1.join()
+        thread1 = Thread(target=extract_tar())
+        thread1.start()
+        thread1.join()
         labels = list(filter(('.DS_Store').__ne__, list(filter('._.DS_Store'.__ne__, os.listdir(output_dir+'/train')))))
         labels.sort()
         model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)

@@ -13,6 +13,7 @@ def unpack(out_dir, tar_file, learning_curve=False):
     :param tar_file: tar file name as it shows in the a cloud bucket
     :return: None, file should be extracted into out_dir
     """
+    project_home = os.environ.get('PROJECT_HOME')
     if not os.path.exists(os.path.join(project_home, 'data')):
         os.mkdir(os.path.join(project_home, 'data'))
     if 'tar.gz' in tar_file and learning_curve is False:
