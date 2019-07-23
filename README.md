@@ -16,19 +16,19 @@ The steps to setting up a google cloud environment are the following:
 ### Create a Google Cloud Project
 
 Go to https://cloud.google.com/     
-In the upper right, sign in to your google account. 
-In the upper right, click console.  
-Create a new project by selecting the drop down menu in the upper left.     
-A pop-up window will have a new projects button in the upper right.        
-Select your new project from the dropdown menu to make it your active project.    
+In the upper right, sign in to your google account   
+In the upper right, click console     
+Create a new project by selecting the drop down menu in the upper left       
+A pop-up window will have a new projects button in the upper right              
+Select your new project from the dropdown menu to make it your active project       
 ##
 ### Create Cloud Storage Bucket
 
-In the search bar, search bucket and select "create bucket".    
-Assign your bucket a unique name.    
-Select regional storage class.  
-Set object-level and bucket-level permissions.  
-Create bucket.  
+In the search bar, search bucket and select "create bucket"         
+Assign your bucket a unique name        
+Select regional storage class   
+Set object-level and bucket-level permissions     
+Create bucket   
 ##
 ###  Split Data
 
@@ -39,6 +39,35 @@ Open a terminal and run python interactively
 `>>> import split_folders`  
 `>>> split_folders.ratio('input_folder', output='output_folder', seed=1337, ratio=(.8, .1, .1))`    
 Read about [split-folders](https://pypi.org/project/split-folders/) 
+##
+### Uploading Data to Buckets
+
+Here there are two options, one GUI based and one command line  
+For command line, you need the [Google SDK](https://cloud.google.com/sdk/docs/#linux)   
+After installation, you can copy items to and from buckets using [gsutil cp](https://cloud.google.com/storage/docs/gsutil/commands/cp) command  
+`gsutil -m cp -r training/data/folder gs://google-bucket-name`  
+The GUI option is a drag and drop interface when you select your bucket from the console home page  
+After your data exists in a bucket, you must adjust permissions as needed   
+##
+### Creating a Compute VM
+
+Search Compute VM in search bar and select add VM instance  
+Choose the name, region, and zone as you like    
+Select enough CPU power to not bottleneck, likely between 4-8 vCPU      
+Click the dropdown "CPU platform and GPU"   
+You may not have any GPU available because you do not have a quota  
+Instructions to increase your GPU quota are at end of section   
+Change the boot disk to select your preferred OS environment    
+We used 'Deep Learning Image: Base m31 (with CUDA 10.0)' as others had trouble with CUDA    
+Defaults for Identity and API access were used  
+At the bottom there is a gcloud command line option showing how to create the above VM from the command line    
+
+To increase your GPU quota, click the drop down menu in the top left corner        
+Hover over 'IAM & admin' and select Quotas from the new list        
+From the Metric drop down box, click None to deselect all, then search GPU  
+Select GPU (all regions), then check the box next to it and click EDIT QUOTAS at the top        
+Fill out the short form with your information and wait 1-3 days for a quota increase        
+
 ##
 ### Running Inference 
 To run general Inference with basic metrics:
