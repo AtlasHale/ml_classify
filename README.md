@@ -15,7 +15,6 @@ The steps to setting up a google cloud environment are the following:
 ##
 ### Create a Google Cloud Project
 
-Google Cloud Environment Set-Up     
 Go to https://cloud.google.com/     
 In the upper right, sign in to your google account. 
 In the upper right, click console.  
@@ -25,7 +24,7 @@ Select your new project from the dropdown menu to make it your active project.
 ##
 ### Create Cloud Storage Bucket
 
-In the search bar, search bucket and select "create bucket".
+In the search bar, search bucket and select "create bucket".    
 Assign your bucket a unique name.    
 Select regional storage class.  
 Set object-level and bucket-level permissions.  
