@@ -67,7 +67,26 @@ Hover over 'IAM & admin' and select Quotas from the new list
 From the Metric drop down box, click None to deselect all, then search GPU  
 Select GPU (all regions), then check the box next to it and click EDIT QUOTAS at the top        
 Fill out the short form with your information and wait 1-3 days for a quota increase        
+##
+### Update drivers and Python version
 
+To connect to the VM, go to console home page, select compute engine, select instance, and click start    
+Connect to the instance through SSH, either in terminal or the google shell version   
+The Base m31 image chosen above prompts you to install nvidia drivers and CUDA on startup   
+If this is the first time you start the VM, accept and install the drivers       
+The Python3 build which comes pre-packaged with this build is 3.5.3   
+To get 3.7.3 installed, use the following commands  
+`sudo apt update`   
+```
+sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget
+```    
+`curl -O https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tar.xz`   
+`tar -xf Python-3.7.3.tar.xz`   
+`cd Python-3.7.3`   
+`./configure --enable-optimizations`    
+`make -j 8` (This is assuming you have 8 cores, you can check with command `nproc`)   
+`sudo make altinstall`  
+`sudo update-alternatives --install /usr/bin/python python /usr/local/bin/python3.7 3`  
 ##
 ### Running Inference 
 To run general Inference with basic metrics:
