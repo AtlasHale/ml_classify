@@ -88,6 +88,9 @@ sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-
 `sudo make altinstall`  
 `sudo update-alternatives --install /usr/bin/python python /usr/local/bin/python3.7 3`  
 ##
+### Update Environment Variables and Modules
+
+##
 ### Running Inference 
 To run general Inference with basic metrics:
 ```
