@@ -34,8 +34,9 @@ Create bucket.
 ###  Split Data
 
 Assuming your data is seperated by class into folders, but not into a train/test/val set    
-Run `pip install split-folders` 
-Open a terminal and run python interactively using `$ python3`  
+Run `pip install split-folders`   
+Open a terminal and run python interactively    
+`$ python3`     
 `import split_folders`  
 `split_folders.ratio('input_folder', output='output_folder', seed=1337, ratio=(.8, .1, .1))`    
 Read about [split-folders](https://pypi.org/project/split-folders/) 
