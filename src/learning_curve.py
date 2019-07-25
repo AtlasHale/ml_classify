@@ -10,7 +10,7 @@ import random
 import shutil
 import tarfile
 import wandb
-import matplotlib
+import matplotlib.pyplot
 import numpy as np
 
 
@@ -75,7 +75,7 @@ def sliced_data(subset_percentage, project_home):
 if __name__ == '__main__':
 
     # train the algorithm on incrementally increasing amounts of training data
-    percent = [1, 2]
+    percent = [1, 2, 3, 4, 5]
     training_size = {}
     hist_dict = {}
 
@@ -95,6 +95,8 @@ if __name__ == '__main__':
 
     # unpack original images
     project_home = os.environ.get('PROJECT_HOME')
+    if os.path.exists(os.path.join(project_home, 'data')):
+        shutil.rmtree(os.path.join(project_home, 'data'))
     if not os.path.exists(os.path.join(project_home, 'data')):
         os.mkdir(os.path.join(project_home, 'data'))
 
@@ -132,10 +134,10 @@ if __name__ == '__main__':
         print(dir(history.history))
         train_error = 1 - history.history['categorical_accuracy'][-1]
         val_error = 1 - history.history['val_categorical_accuracy'][-1]
-        matplotlib.plot(training_size[percent], train_error, 'ro')
-        matplotlib.plot(training_size[percent], val_error,'bo')
-    matplotlib.title('Learning curve')
-    matplotlib.xlabel('Training set size')
-    matplotlib.ylabel('Error')
-    matplotlib.legend()
-    wandb.log({"learning curve": matplotlib})
+        matplotlib.pyplot.plot(training_size[percent], train_error, 'ro')
+        matplotlib.pyplot.plot(training_size[percent], val_error,'bo')
+    matplotlib.pyplot.title('Learning curve')
+    matplotlib.pyplot.xlabel('Training set size')
+    matplotlib.pyplot.ylabel('Error')
+    matplotlib.pyplot.legend()
+    wandb.log({"learning curve": matplotlib.pyplot})
