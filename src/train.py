@@ -203,9 +203,10 @@ class Train:
                                               metrics=metrics.categorical_accuracy,
                                               labels=labels)
         train.print_metrics(history)
-        return history
         # terminate tensorboard sessions
         sess.close()
+        return history
+
 
 from time import time
 
