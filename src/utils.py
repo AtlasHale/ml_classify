@@ -28,6 +28,7 @@ def unpack(out_dir, tar_file, learning_curve=False):
             tar.extractall(path=os.path.join(out_dir, 'data'))
             tar.close()
             print('finished unpacking thread')
+            print(os.listdir(os.path.join(out_dir, 'data')))
         thread1 = threading.Thread(target=threaded_extract(tar_file))
         thread1.start()
         thread1.join()

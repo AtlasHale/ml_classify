@@ -89,7 +89,7 @@ class Train:
                                            use_multiprocessing=True,
                                            validation_data=validation_generator,
                                            validation_steps=validation_steps,
-                                           callbacks=[tensorboard, checkpoint, early, m,
+                                           callbacks=[tensorboard, checkpoint, early,
                                                       WandbCallback(data_type="image",
                                                                     validation_data=validation_generator,
                                                                     labels=labels)])# , schedule])
@@ -203,7 +203,7 @@ class Train:
                                               metrics=metrics.categorical_accuracy,
                                               labels=labels)
         train.print_metrics(history)
-
+        return history
         # terminate tensorboard sessions
         sess.close()
 
