@@ -129,9 +129,9 @@ if __name__ == '__main__':
     # this will convert to plotly by default in wandb
     print(hist_dict)
     for percent, history in hist_dict.items():
-        print(dir(history))
-        train_error = 1 - history.history['acc'][-1]
-        val_error = 1 - history.history['val_acc'][-1]
+        print(dir(history.history))
+        train_error = 1 - history.history['categorical_accuracy'][-1]
+        val_error = 1 - history.history['val_categorical_accuracy'][-1]
         matplotlib.plot(training_size[percent], train_error, 'ro')
         matplotlib.plot(training_size[percent], val_error,'bo')
     matplotlib.title('Learning curve')

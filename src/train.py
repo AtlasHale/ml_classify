@@ -5,9 +5,9 @@ sys.path.insert(0, parentdir)
 print('Adding {} to path'.format(parentdir))
 import tensorflow as tf
 import tempfile
-import keras
-from keras import optimizers
-from keras import metrics
+import keras    # remove after changing
+from keras import optimizers    # switch to tf.keras
+from keras import metrics   # switch to tf.keras
 from tensorflow.python.keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, Callback
 from transfer_model import TransferModel
 from metrics import Metrics
