@@ -57,7 +57,7 @@ def sliced_data(subset_percentage, project_home):
     classes = [folder for folder in os.listdir(os.path.join(project_home, 'data', 'train'))]
     for folder in classes:
         os.mkdir(os.path.join(project_home, 'data', 'temp', folder))
-        image_number = subset_percentage/100*len(os.listdir(os.path.join(project_home, 'data', 'train', folder)))
+        image_number = (subset_percentage/100)*len(os.listdir(os.path.join(project_home, 'data', 'train', folder)))
         images = [image for image in os.listdir(os.path.join(project_home, 'data', 'train', folder))]
         uniques = set()
         for i in range(int(image_number)):
@@ -75,7 +75,7 @@ def sliced_data(subset_percentage, project_home):
 if __name__ == '__main__':
 
     # train the algorithm on incrementally increasing amounts of training data
-    percent = [5, 20, 50, 75, 100]
+    percent = [1, 2]
     training_size = {}
     hist_dict = {}
 
@@ -120,12 +120,16 @@ if __name__ == '__main__':
         args.train_tar = os.path.join(project_home, 'data', 'temp.tar.gz')
         print(args.train_tar)
         # train and store history of results
-        hist_dict[p] = Train().train_model(args)
+        model = Train().train_model(args)
+        print(dir(model))
+        hist_dict[p] = model
         training_size[p] = size
 
     # plot the last error of each training cycle and log as object in wandb
     # this will convert to plotly by default in wandb
+    print(hist_dict)
     for percent, history in hist_dict.items():
+        print(dir(history))
         train_error = 1 - history.history['acc'][-1]
         val_error = 1 - history.history['val_acc'][-1]
         matplotlib.plot(training_size[percent], train_error, 'ro')
