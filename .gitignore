@@ -2,3 +2,5 @@
 *tar*
 *data/
 *wandb/
+*tensorboard_logging*
+*__pycache__*
