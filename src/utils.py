@@ -24,6 +24,7 @@ def unpack(out_dir, tar_file, learning_curve=False):
         tar.close()
     elif 'tar.gz' in tar_file and learning_curve is True:
         download_gs(tar_file=tar_file, tar_bucket=os.environ.get('TAR_BUCKET'), out_dir=os.path.join(out_dir, 'data'))
+        print(f'downloading tar file: {tar_file}\nFrom bucket: {os.environ.get("TAR_BUCKET")}\nTo directory: {os.path.join(out_dir, "data")}')
         def threaded_extract(tar_file):
             print('Unpacking in a thread {} to {}'.format(tar_file, out_dir))
             tar = tarfile.open(os.path.join(out_dir, 'data', tar_file))
@@ -33,8 +34,10 @@ def unpack(out_dir, tar_file, learning_curve=False):
         thread1 = threading.Thread(target=threaded_extract(tar_file))
         thread1.start()
         thread1.join()
-        shutil.rmtree(os.path.join(out_dir, 'data', 'train'))
-        os.rename(os.path.join(out_dir, 'data', 'temp'), os.path.join(out_dir, 'data', 'train'))
+        print(os.listdir(os.path.join(out_dir, 'data')))
+        if 'train' in tar_file and 'temp' in os.listdir(os.path.join(out_dir, 'data')):
+            shutil.rmtree(os.path.join(out_dir, 'data', 'train'))
+            os.rename(os.path.join(out_dir, 'data', 'temp'), os.path.join(out_dir, 'data', 'train'))
     elif os.path.isfile(tar_file) and 'tar.gz' in tar_file and 's3' not in tar_file:
         print('Unpacking {}'.format(tar_file))
         tar = tarfile.open(tar_file)
