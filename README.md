@@ -90,6 +90,17 @@ sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-
 ##
 ### Update Environment Variables and Modules
 
+cd ~  
+git clone https://github.com/AtlasHale/ml_classify     
+cd ml_classify    
+Upload google service credentials as credentials.json   
+mv ~/credentials.json ~/ml_classify/  
+https://cloud.google.com/storage/docs/reference/libraries to find how to generate API key   
+
+Export project home as $PWD     
+Export tar bucket as name of bucket with tar files      
+Export wandb run group, user, api key   
+Export google service credentials location ($PWD/credentials.json)  
 ##
 ### Running Inference 
 To run general Inference with basic metrics:
@@ -104,18 +115,3 @@ python3 src/learning_curve.py --horizontal_flip True --augment_range 0.2 \
 --train_tar 100_train.tar.gz --val_tar val.tar.gz --lr 0.001 --base_model inceptionv3 \
 --project inception_learning_curve --batch_size 4 --epoch 10
 ```
-##
-cd ~  
-git clone https://github.com/AtlasHale/ml_classify     
-cd ml_classify    
-Upload google service credentials as credentials.json   
-mv ~/credentials.json ~/ml_classify/  
-https://cloud.google.com/storage/docs/reference/libraries to find how to generate API key   
-
-
-
-Export project home as $PWD     
-Export tar bucket as name of bucket with tar files      
-Export wandb run group, user, api key   
-Export google service credentials location ($PWD/credentials.json)  
-
