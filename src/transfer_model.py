@@ -1,5 +1,4 @@
 import tensorflow as tf
-from tensorflow import keras
 import conf as model_conf
 
 class TransferModel():
@@ -26,18 +25,18 @@ class TransferModel():
         if l2_weight_decay_alpha > 0.:
             if cfg['has_depthwise_layers']:
                 for layer in base_model.layers:
-                    if isinstance(layer, keras.layers.DepthwiseConv2D):
-                        layer.add_loss(keras.regularizers.l2(l2_weight_decay_alpha)(l.depthwise_kernel))
-                    elif isinstance(layer, keras.layers.Conv2D) or isinstance(layer, keras.layers.Dense):
-                        layer.add_loss(keras.regularizers.l2(l2_weight_decay_alpha)(layer.kernel))
+                    if isinstance(layer, tf.keras.layers.DepthwiseConv2D):
+                        layer.add_loss(tf.keras.regularizers.l2(l2_weight_decay_alpha)(l.depthwise_kernel))
+                    elif isinstance(layer, tf.keras.layers.Conv2D) or isinstance(layer, tf.keras.layers.Dense):
+                        layer.add_loss(tf.keras.regularizers.l2(l2_weight_decay_alpha)(layer.kernel))
                     if hasattr(layer, 'bias_regularizer') and layer.use_bias:
-                        layer.add_loss(keras.regularizers.l2(l2_weight_decay_alpha)(layer.bias))
+                        layer.add_loss(tf.keras.regularizers.l2(l2_weight_decay_alpha)(layer.bias))
             else:
                 for layer in base_model.layers:
-                    if isinstance(layer, keras.layers.Conv2D) or isinstance(layer, keras.layers.Dense):
-                        layer.add_loss(keras.regularizers.l2(l2_weight_decay_alpha)(layer.kernel))
+                    if isinstance(layer, tf.keras.layers.Conv2D) or isinstance(layer, tf.keras.layers.Dense):
+                        layer.add_loss(tf.keras.regularizers.l2(l2_weight_decay_alpha)(layer.kernel))
                     if hasattr(layer, 'bias_regularizer') and layer.use_bias:
-                        layer.add_loss(keras.regularizers.l2(l2_weight_decay_alpha)(layer.bias))
+                        layer.add_loss(tf.keras.regularizers.l2(l2_weight_decay_alpha)(layer.bias))
 
 
         # Freezing (or setting layer.trainable = False) prevents weights in these layers
@@ -53,8 +52,8 @@ class TransferModel():
 
         model = tf.keras.Sequential([
             base_model,
-            keras.layers.GlobalAveragePooling2D(),
-            keras.layers.Dense(17, activation='softmax')
+            tf.keras.layers.GlobalAveragePooling2D(),
+            tf.keras.layers.Dense(17, activation='softmax')
         ])
 
         return model, image_size, fine_tune_at
