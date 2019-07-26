@@ -1,10 +1,11 @@
 import os, sys, inspect
+import tensorflow as tf
+from tensorflow.python.keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, Callback
+
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 print('Adding {} to path'.format(parentdir))
-import tensorflow as tf
-from tensorflow.python.keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, Callback
 from transfer_model import TransferModel
 from metrics import Metrics
 import wandb

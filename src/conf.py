@@ -7,49 +7,49 @@ MAX_LR = 0.1#1e-1
 
 densenet201 = dict(
     image_size = 224,
-    model_instance = "keras.applications.densenet.DenseNet201",
+    model_instance = "tf.keras.applications.densenet.DenseNet201",
     fine_tune_at = -1,
     has_depthwise_layers = False
 )
 inceptionv3 = dict(
     image_size = 299,
-    model_instance = "keras.applications.inception_v3.InceptionV3",
+    model_instance = "tf.keras.applications.inception_v3.InceptionV3",
     fine_tune_at = -1,
     has_depthwise_layers = False
 )
 inception_resnetv2 = dict(
     image_size = 299,
-    model_instance = "keras.applications.inception_resnet_v2.InceptionResNetV2",
+    model_instance = "tf.keras.applications.inception_resnet_v2.InceptionResNetV2",
     fine_tune_at = -1,
     has_depthwise_layers = False
 )
 xception = dict(
     image_size = 299,
-    model_instance="keras.applications.xception.Xception",
+    model_instance="tf.keras.applications.xception.Xception",
     fine_tune_at = -1,
     has_depthwise_layers = False
 )
 nasnetlarge = dict(
     image_size = 331,
-    model_instance="keras.applications.nasnet.NASNetLarge",
+    model_instance="tf.keras.applications.nasnet.NASNetLarge",
     fine_tune_at = -1,
     has_depthwise_layers = False
 )
 resnet50 = dict(
     image_size = 224,
-    model_instance="keras.applications.ResNet50",
+    model_instance="tf.keras.applications.ResNet50",
     fine_tune_at = -1,
     has_depthwise_layers = False
 )
 vgg16 = dict(
     image_size = 150,
-    model_instance="keras.applications.VGG16",
+    model_instance="tf.keras.applications.VGG16",
     fine_tune_at = -1,
     has_depthwise_layers = False
 )
 mobilenetv2 = dict(
     image_size = 224,
-    model_instance = "keras.applications.MobileNetV2",
+    model_instance = "tf.keras.applications.MobileNetV2",
     model_url  = "https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/classification/2",
     feature_extractor_url="https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/feature_vector/2",
     fine_tune_at = 100,
