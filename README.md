@@ -80,11 +80,11 @@ To get 3.7.3 installed, use the following commands
 ```
 sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget
 ```    
-`curl -O https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tar.xz`   
-`tar -xf Python-3.7.3.tar.xz`   
+`sudo curl -O https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tar.xz`   
+`sudo tar -xf Python-3.7.3.tar.xz`   
 `cd Python-3.7.3`   
-`./configure --enable-optimizations`    
-`make -j 8` (This is assuming you have 8 cores, you can check with command `nproc`)   
+`sudo ./configure --enable-optimizations`    
+`sudo make -j 8` (This is assuming you have 8 cores, you can check with command `nproc`)   
 `sudo make altinstall`  
 `sudo update-alternatives --install /usr/bin/python python /usr/local/bin/python3.7 3`  
 ##
