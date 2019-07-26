@@ -46,11 +46,7 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         self.val_count = 0
         label_predict = [class_map[i] for i in val_predict]
         label_true = [class_map[i] for i in val_true]
-        print(sklearn.metrics.classification_report(
-            val_predict,
-            val_true,
-            labels=[i for i in range(len(self.labels))],
-            target_names=self.labels))
+
         _val_f1 = sklearn.metrics.f1_score(label_true, label_predict, labels=self.labels, average=None)
         _val_recall = sklearn.metrics.recall_score(label_true, label_predict, labels=self.labels, average=None)
         _val_precision = sklearn.metrics.precision_score(label_true, label_predict, labels=self.labels, average=None) # possibly something besides none (binary, etc)
@@ -68,9 +64,9 @@ class Metrics(tensorflow.keras.callbacks.Callback):
             f1_log = {label+'_f1':_val_f1[re_map[label]]}
             precision_log = {label+'_precision':_val_precision[re_map[label]]}
             recall_log = {label+'_recall': _val_recall[re_map[label]]}
-            wandb.log(f1_log)
-            wandb.log(precision_log)
-            wandb.log(recall_log)
+            wandb.log(f1_log, step=epoch)
+            wandb.log(precision_log, step=epoch)
+            wandb.log(recall_log, step=epoch)
         return
 
     def parse_batch(self, batch, val_true, val_predict):

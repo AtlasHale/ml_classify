@@ -56,9 +56,11 @@ def subsample(subset_percentage, train_dir):
 def sliced_data(subset_percentage, project_home):
     classes = [folder for folder in os.listdir(os.path.join(project_home, 'data', 'train'))]
     for folder in classes:
-        os.mkdir(os.path.join(project_home, 'data', 'temp', folder))
-        image_number = (subset_percentage/100)*len(os.listdir(os.path.join(project_home, 'data', 'train', folder)))
+        image_number = int((subset_percentage/100)*len(os.listdir(os.path.join(project_home, 'data', 'train', folder))))
+        if len(images) == 0:
+            continue
         images = [image for image in os.listdir(os.path.join(project_home, 'data', 'train', folder))]
+        os.mkdir(os.path.join(project_home, 'data', 'temp', folder))
         uniques = set()
         for i in range(int(image_number)):
             index = np.random.randint(0, len(images))
