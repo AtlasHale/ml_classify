@@ -57,7 +57,7 @@ def sliced_data(subset_percentage, project_home):
     classes = [folder for folder in os.listdir(os.path.join(project_home, 'data', 'train'))]
     for folder in classes:
         image_number = int((subset_percentage/100)*len(os.listdir(os.path.join(project_home, 'data', 'train', folder))))
-        if len(images) == 0:
+        if image_number == 0:
             continue
         images = [image for image in os.listdir(os.path.join(project_home, 'data', 'train', folder))]
         os.mkdir(os.path.join(project_home, 'data', 'temp', folder))
@@ -77,7 +77,7 @@ def sliced_data(subset_percentage, project_home):
 if __name__ == '__main__':
 
     # train the algorithm on incrementally increasing amounts of training data
-    percent = [1, 2, 3, 4, 5]
+    percent = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95]
     training_size = {}
     hist_dict = {}
 
