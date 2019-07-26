@@ -1,13 +1,9 @@
-import os,sys,inspect
+import os, sys, inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 print('Adding {} to path'.format(parentdir))
 import tensorflow as tf
-import tempfile
-import keras    # remove after changing
-from keras import optimizers    # switch to tf.keras
-from keras import metrics   # switch to tf.keras
 from tensorflow.python.keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, Callback
 from transfer_model import TransferModel
 from metrics import Metrics
@@ -25,7 +21,7 @@ class Train:
 
     def compile_and_fit_model(self, model, fine_tune_at, train_generator, validation_generator, epochs,
                               batch_size, loss, optimizer, lr, labels,
-                              metrics=metrics.categorical_accuracy,
+                              metrics=tf.keras.metrics.categorical_accuracy,
                               save_model=False, output_dir=os.environ.get('PROJECT_HOME')):
 
         print('Writing TensorFlow events locally to tensorboard_logging')
@@ -42,12 +38,6 @@ class Train:
             for layer in model.layers[:fine_tune_at]:
                 layer.trainable = False
 
-        if optimizer == 'rmsprop':
-                opt = optimizers.RMSprop(lr=lr)
-                opt = optimizers.RMSprop(lr=lr)
-                model.compile(optimizer=opt,
-                              loss=loss,
-                              metrics=[metrics])
         elif optimizer == 'adam':
             model.compile(loss=loss,
                           optimizer=tf.keras.optimizers.Adam(lr=lr),
