@@ -134,7 +134,7 @@ class Train:
         sess = tf.compat.v1.InteractiveSession()
 
         # Rescale all images by 1./255 and apply image augmentation if requested
-        train_datagen = keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255,
+        train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255,
                                                                      width_shift_range=args.augment_range,
                                                                      height_shift_range=args.augment_range,
                                                                      zoom_range=args.augment_range,
@@ -143,7 +143,7 @@ class Train:
                                                                      shear_range=args.shear_range
                                                                      )
 
-        val_datagen = keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255,
+        val_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255,
                                                                    width_shift_range=args.augment_range,
                                                                    height_shift_range=args.augment_range,
                                                                    zoom_range=args.augment_range,
@@ -190,7 +190,7 @@ class Train:
                                               epochs=args.epochs, batch_size=args.batch_size,
                                               loss=args.loss, output_dir=output_dir,
                                               optimizer=args.optimizer,
-                                              metrics=metrics.categorical_accuracy,
+                                              metrics=tf.keras.metrics.categorical_accuracy,
                                               labels=labels)
         train.print_metrics(history)
         # terminate tensorboard sessions
