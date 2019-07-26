@@ -78,7 +78,7 @@ The Python3 build which comes pre-packaged with this build is 3.5.3
 To get 3.7.3 installed, use the following commands  
 `sudo apt update`   
 ```
-sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget
+sudo apt install build-essential tk-dev libbz2-dev zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget
 ```    
 `sudo curl -O https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tar.xz`   
 `sudo tar -xf Python-3.7.3.tar.xz`   
