@@ -113,6 +113,8 @@ if __name__ == '__main__':
 
     for p in percent:
         # subsample
+        if os.path.exists(os.path.join(project_home, 'best.weights.hdf5')):
+            shutil.rmtree(os.path.join(project_home, 'best.weights.hdf5'))
         temp_dir = os.path.join(project_home, 'data', 'temp')
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)

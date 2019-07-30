@@ -59,11 +59,11 @@ class Train:
         checkpoint = ModelCheckpoint(checkpoint_path, monitor=monitor, verbose=1, save_best_only=True, mode='max')
 
         # reduce_lr = tensorflow.python.keras.callbacks.ReduceLROnPlateau()
-        """
+
         if os.path.exists(checkpoint_path):
             print('Loading model weights from {}'.format(checkpoint_path))
             model.load_weights(checkpoint_path)
-
+        """
         schedule = SGDRScheduler(min_lr=conf.MIN_LR,
                                  max_lr=conf.MAX_LR,
                                  steps_per_epoch=np.ceil(epochs / batch_size),
