@@ -77,7 +77,7 @@ def sliced_data(subset_percentage, project_home):
 if __name__ == '__main__':
 
     # train the algorithm on incrementally increasing amounts of training data
-    percent = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95]
+    percent = [25, 50, 60, 70, 80, 90, 100]
     training_size = {}
     hist_dict = {}
 
@@ -122,18 +122,17 @@ if __name__ == '__main__':
 
         # # replace training with subset
         args.train_tar = os.path.join(project_home, 'data', 'temp.tar.gz')
-        print(args.train_tar)
         # train and store history of results
         model = Train().train_model(args)
-        print(dir(model))
         hist_dict[p] = model
         training_size[p] = size
+        wandb.log({"train_error": 1 - model.history['categorical_accuracy'][-1]})
+        wandb.log({"val_error": 1 - model.history['val_categorical_accuracy'][-1]})
 
     # plot the last error of each training cycle and log as object in wandb
     # this will convert to plotly by default in wandb
-    print(hist_dict)
+    """
     for percent, history in hist_dict.items():
-        print(dir(history.history))
         train_error = 1 - history.history['categorical_accuracy'][-1]
         val_error = 1 - history.history['val_categorical_accuracy'][-1]
         matplotlib.pyplot.plot(training_size[percent], train_error, 'ro')
@@ -143,3 +142,4 @@ if __name__ == '__main__':
     matplotlib.pyplot.ylabel('Error')
     matplotlib.pyplot.legend()
     wandb.log({"learning curve": matplotlib.pyplot})
+    """

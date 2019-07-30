@@ -54,33 +54,30 @@ class Train:
             monitor = 'val_binary_accuracy'
 
         early = EarlyStopping(monitor=monitor, min_delta=0, patience=5, verbose=1, mode='auto')
+        
+        """
         checkpoint_path = '{}/best.weights.hdf5'.format(output_dir)
         checkpoint = ModelCheckpoint(checkpoint_path, monitor=monitor, verbose=1, save_best_only=True, mode='max')
         if os.path.exists(checkpoint_path):
             print('Loading model weights from {}'.format(checkpoint_path))
             model.load_weights(checkpoint_path)
 
-        '''schedule = SGDRScheduler(min_lr=conf.MIN_LR,
+        schedule = SGDRScheduler(min_lr=conf.MIN_LR,
                                  max_lr=conf.MAX_LR,
                                  steps_per_epoch=np.ceil(epochs / batch_size),
                                  lr_decay=0.9,
                                  cycle_length=5,
-                                 mult_factor=1.5)'''
+                                 mult_factor=1.5)
+        """
+
         m = Metrics(labels=labels, val_data=validation_generator, batch_size=batch_size)
-        # add m to list of callbacks
-        # callbacks is a list of pointers to functions that get called at end of epoch
-        """
-        File "/Users/chale/Desktop/ml_classify/src/train.py", line 35, in on_epoch_end
-        val_predict = (np.asarray(self.model.predict(self.model.validation_data[0]))).round()
-        AttributeError: 'Sequential' object has no attribute 'validation_data'
-        """
         history = model.fit_generator(train_generator,
                                            steps_per_epoch=steps_per_epoch,
                                            epochs=epochs,
                                            use_multiprocessing=True,
                                            validation_data=validation_generator,
                                            validation_steps=validation_steps,
-                                           callbacks=[tensorboard, checkpoint, early,
+                                           callbacks=[tensorboard, early,
                                                       WandbCallback(data_type="image",
                                                                     validation_data=validation_generator,
                                                                     labels=labels)])# , schedule])
