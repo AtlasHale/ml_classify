@@ -65,7 +65,7 @@ def sliced_data(subset_percentage, project_home):
         for i in range(int(image_number)):
             index = np.random.randint(0, len(images))
             while index in uniques:
-                index = np.random.randint(0, len(images))
+                index = np.random.randint()
             dst = os.path.join(project_home, 'data', 'temp', folder)
             src = os.path.join(project_home, 'data', 'train', folder, images[index])
             shutil.copy(src, dst)
@@ -77,7 +77,7 @@ def sliced_data(subset_percentage, project_home):
 if __name__ == '__main__':
 
     # train the algorithm on incrementally increasing amounts of training data
-    percent = [25, 50, 60, 70, 80, 90, 100]
+    percent = [25, 50, 55, 60, 65,  70, 75,  80, 85,  90, 95, 100]
     training_size = {}
     hist_dict = {}
 
@@ -126,8 +126,8 @@ if __name__ == '__main__':
         model = Train().train_model(args)
         hist_dict[p] = model
         training_size[p] = size
-        wandb.log({"train_error": 1 - model.history['categorical_accuracy'][-1]})
-        wandb.log({"val_error": 1 - model.history['val_categorical_accuracy'][-1]})
+        wandb.log({"train_error": 1 - model.history['categorical_accuracy'][-1], "Percent Train Data": size})
+        wandb.log({"val_error": 1 - model.history['val_categorical_accuracy'][-1], "Percent Train Data": size})
 
     # plot the last error of each training cycle and log as object in wandb
     # this will convert to plotly by default in wandb
