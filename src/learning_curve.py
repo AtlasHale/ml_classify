@@ -55,6 +55,7 @@ def subsample(subset_percentage, train_dir):
 
 def sliced_data(subset_percentage, project_home):
     classes = [folder for folder in os.listdir(os.path.join(project_home, 'data', 'train'))]
+    counter = 0
     for folder in classes:
         image_number = int((subset_percentage/100)*len(os.listdir(os.path.join(project_home, 'data', 'train', folder))))
         if image_number == 0:
@@ -69,10 +70,12 @@ def sliced_data(subset_percentage, project_home):
             dst = os.path.join(project_home, 'data', 'temp', folder)
             src = os.path.join(project_home, 'data', 'train', folder, images[index])
             shutil.copy(src, dst)
+            end = str(np.random.randint(0,100000))
+            shutil.move((os.path.join(dst, images[index])), os.path.join(dst, end+images[index]))
+            counter += 1
     with tarfile.open(os.path.join(project_home, 'data', str(subset_percentage)+'_train.tar.gz'), 'w:gz') as tar:
         tar.add(os.path.join(project_home, 'data', 'temp'), arcname=os.path.basename(os.path.join(project_home, 'data', 'temp')))
     tar.close()
-
 
 if __name__ == '__main__':
 

@@ -53,7 +53,7 @@ class Train:
         else:
             monitor = 'val_binary_accuracy'
 
-        early = EarlyStopping(monitor=monitor, min_delta=0, patience=5, verbose=1, mode='auto')
+        early = EarlyStopping(monitor=monitor, min_delta=0, patience=3, verbose=1, mode='auto')
         
         """
         checkpoint_path = '{}/best.weights.hdf5'.format(output_dir)
@@ -78,7 +78,7 @@ class Train:
                                            validation_data=validation_generator,
                                            validation_steps=validation_steps,
                                            callbacks=[tensorboard, early,
-                                                      WandbCallback(data_type="image",
+                                                      WandbCallback(data_type="image", 
                                                                     validation_data=validation_generator,
                                                                     labels=labels)])# , schedule])
 
