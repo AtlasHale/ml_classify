@@ -195,7 +195,8 @@ class Train:
         train.print_metrics(history)
         # terminate tensorboard sessions
         sess.close()
-        return history
+        model.load_weights(checkpoint_path)
+        return model
 
 
 from time import time
