@@ -54,10 +54,12 @@ class Train:
             monitor = 'val_binary_accuracy'
 
         early = EarlyStopping(monitor=monitor, min_delta=0, patience=3, verbose=1, mode='auto')
-        
-        """
+
         checkpoint_path = '{}/best.weights.hdf5'.format(output_dir)
         checkpoint = ModelCheckpoint(checkpoint_path, monitor=monitor, verbose=1, save_best_only=True, mode='max')
+
+        # reduce_lr = tensorflow.python.keras.callbacks.ReduceLROnPlateau()
+        """
         if os.path.exists(checkpoint_path):
             print('Loading model weights from {}'.format(checkpoint_path))
             model.load_weights(checkpoint_path)
@@ -77,7 +79,7 @@ class Train:
                                            use_multiprocessing=True,
                                            validation_data=validation_generator,
                                            validation_steps=validation_steps,
-                                           callbacks=[tensorboard, early,
+                                           callbacks=[tensorboard, early, checkpoint,
                                                       WandbCallback(data_type="image", 
                                                                     validation_data=validation_generator,
                                                                     labels=labels)])# , schedule])
@@ -163,9 +165,9 @@ class Train:
             thread1 = Thread(target=extract_tar())
             thread1.start()
             thread1.join()
-        labels = list(filter(('.DS_Store').__ne__, list(filter('._.DS_Store'.__ne__, os.listdir(output_dir+'/train')))))
+        labels = list(filter('.DS_Store'.__ne__, list(filter('._.DS_Store'.__ne__, os.listdir(output_dir+'/train')))))
         labels.sort()
-        model, image_size, fine_tune_at  = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
+        model, image_size, fine_tune_at = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
         train = Train()
 
         # Flow training images in batches of <batch_size> using train_datagen generator
