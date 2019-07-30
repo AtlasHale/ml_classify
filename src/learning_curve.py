@@ -65,7 +65,7 @@ def sliced_data(subset_percentage, project_home):
         for i in range(int(image_number)):
             index = np.random.randint(0, len(images))
             while index in uniques:
-                index = np.random.randint()
+                index = np.random.randint(0, len(images))
             dst = os.path.join(project_home, 'data', 'temp', folder)
             src = os.path.join(project_home, 'data', 'train', folder, images[index])
             shutil.copy(src, dst)
