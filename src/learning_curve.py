@@ -136,15 +136,4 @@ if __name__ == '__main__':
 
     # plot the last error of each training cycle and log as object in wandb
     # this will convert to plotly by default in wandb
-    """
-    for percent, history in hist_dict.items():
-        train_error = 1 - history.history['categorical_accuracy'][-1]
-        val_error = 1 - history.history['val_categorical_accuracy'][-1]
-        matplotlib.pyplot.plot(training_size[percent], train_error, 'ro')
-        matplotlib.pyplot.plot(training_size[percent], val_error,'bo')
-    matplotlib.pyplot.title('Learning curve')
-    matplotlib.pyplot.xlabel('Training set size')
-    matplotlib.pyplot.ylabel('Error')
-    matplotlib.pyplot.legend()
-    wandb.log({"learning curve": matplotlib.pyplot})
-    """
+
