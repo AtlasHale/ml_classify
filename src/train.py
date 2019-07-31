@@ -8,6 +8,7 @@ sys.path.insert(0, parentdir)
 print('Adding {} to path'.format(parentdir))
 from transfer_model import TransferModel
 from metrics import Metrics
+from results import Results
 import wandb
 from wandb.keras import WandbCallback
 from argparser import ArgParser
@@ -52,18 +53,18 @@ class Train:
             monitor = 'val_categorical_accuracy'
         else:
             monitor = 'val_binary_accuracy'
-
-        early = EarlyStopping(monitor=monitor, min_delta=0, patience=3, verbose=1, mode='auto')
+        """
+        early = EarlyStopping(monitor='val_loss', min_delta=100, patience=1, verbose=1, mode='min')
 
         checkpoint_path = '{}/best.weights.hdf5'.format(output_dir)
         checkpoint = ModelCheckpoint(checkpoint_path, monitor=monitor, verbose=1, save_best_only=True, mode='max')
 
         # reduce_lr = tensorflow.python.keras.callbacks.ReduceLROnPlateau()
-
+        
         if os.path.exists(checkpoint_path):
             print('Loading model weights from {}'.format(checkpoint_path))
             model.load_weights(checkpoint_path)
-        """
+
         schedule = SGDRScheduler(min_lr=conf.MIN_LR,
                                  max_lr=conf.MAX_LR,
                                  steps_per_epoch=np.ceil(epochs / batch_size),
@@ -71,7 +72,7 @@ class Train:
                                  cycle_length=5,
                                  mult_factor=1.5)
         """
-
+        best = Results()
         m = Metrics(labels=labels, val_data=validation_generator, batch_size=batch_size)
         history = model.fit_generator(train_generator,
                                            steps_per_epoch=steps_per_epoch,
@@ -79,7 +80,7 @@ class Train:
                                            use_multiprocessing=True,
                                            validation_data=validation_generator,
                                            validation_steps=validation_steps,
-                                           callbacks=[tensorboard, early, checkpoint,
+                                           callbacks=[tensorboard, best, 
                                                       WandbCallback(data_type="image", 
                                                                     validation_data=validation_generator,
                                                                     labels=labels)])# , schedule])
@@ -195,8 +196,7 @@ class Train:
         train.print_metrics(history)
         # terminate tensorboard sessions
         sess.close()
-        model.load_weights(checkpoint_path)
-        return model
+        return history
 
 
 from time import time
