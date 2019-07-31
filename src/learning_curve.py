@@ -80,7 +80,7 @@ def sliced_data(subset_percentage, project_home):
 if __name__ == '__main__':
 
     # train the algorithm on incrementally increasing amounts of training data
-    percent = [25, 50, 55, 60, 65,  70, 75,  80, 85,  90, 95, 100]
+    percent = [40, 45, 50, 55, 60, 65,  70, 75,  80, 85,  90, 95, 100]
     training_size = {}
     hist_dict = {}
 
