@@ -74,20 +74,17 @@ class Train:
                                  mult_factor=1.5)
         """
         m = Metrics(labels=labels, val_data=validation_generator, batch_size=batch_size)
-        history = model.fit_generator(train_generator,
-                                           steps_per_epoch=steps_per_epoch,
-                                           epochs=epochs,
-                                           use_multiprocessing=True,
-                                           validation_data=validation_generator,
-                                           validation_steps=validation_steps,
-                                           callbacks=[tensorboard, best_model, early_stop,
-                                                      WandbCallback(data_type="image", 
-                                                                    validation_data=validation_generator,
-                                                                    labels=labels)])# , schedule])
-
-        if save_model:
-            model_dir = self.get_directory_path("keras_models")
-            self.keras_save_model(model, model_dir)
+        wandb_call = WandbCallback(data_type="image", validation_data=validation_generator, labels=labels)
+        calls = [tensorboard, best_model, early_stop, m, wandb_call]
+        history = model.fit_generator(
+                                    train_generator,
+                                    steps_per_epoch=steps_per_epoch,
+                                    epochs=epochs,
+                                    use_multiprocessing=True,
+                                    validation_data=validation_generator,
+                                    validation_steps=validation_steps,
+                                    callbacks=calls
+                                    )
 
         return history
 
