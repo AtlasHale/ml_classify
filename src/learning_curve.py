@@ -123,16 +123,16 @@ if __name__ == '__main__':
 
         sliced_data(p, project_home)
         # subset_train_tar = temp_dir
-        size = p
+        # size = p
 
         # # replace training with subset
         args.train_tar = os.path.join(project_home, 'data', 'temp.tar.gz')
         # train and store history of results
         model = Train().train_model(args)
-        hist_dict[p] = model
-        training_size[p] = size
-        wandb.log({"train_error": 1 - model.history['categorical_accuracy'][-1], "Percent Train Data": size})
-        wandb.log({"val_error": 1 - model.history['val_categorical_accuracy'][-1], "Percent Train Data": size})
+        # hist_dict[p] = model
+        # training_size[p] = size
+        wandb.log({"train_error": 1 - model.history['categorical_accuracy'][-1], "Percent Train Data": p})
+        wandb.log({"val_error": 1 - model.history['val_categorical_accuracy'][-1], "Percent Train Data": p})
 
     # plot the last error of each training cycle and log as object in wandb
     # this will convert to plotly by default in wandb
