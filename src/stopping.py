@@ -56,6 +56,7 @@ class Stopping(tensorflow.keras.callbacks.Callback):
     current = self.get_monitor_value(logs)
     if current is None:
       return
+    
     if self.monitor_op(current - self.min_delta, self.best):
       self.best = current
       self.wait = 0
@@ -63,10 +64,12 @@ class Stopping(tensorflow.keras.callbacks.Callback):
         self.best_weights = self.model.get_weights()
     else:
       self.wait += 1
+      print(f'{self.wait} epochs since improvement to {self.monitor}')
       if self.wait >= self.patience:
         self.stopped_epoch = epoch
+        print(f'Model training state previously: {self.model.stop_training}')
         self.model.stop_training = True
-        print(self.model.stop_training)
+        print(f'Model training state now: {self.model.stop_training}')
         if self.restore_best_weights:
           if self.verbose > 0:
             print('Restoring model weights from the end of the best epoch.')

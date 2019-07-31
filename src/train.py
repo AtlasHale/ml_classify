@@ -54,7 +54,7 @@ class Train:
         else:
             monitor = 'val_binary_accuracy'
 
-        early_stop = EarlyStopping(monitor=monitor, patience=3, verbose=1, restore_best_weights=True)
+        early_stop = Stopping(monitor=monitor, patience=3, verbose=1, restore_best_weights=True)
 
         checkpoint_path = '{}/best.weights.hdf5'.format(output_dir)
         best_model = ModelCheckpoint(checkpoint_path, monitor=monitor, verbose=1, save_best_only=True, mode='max')
