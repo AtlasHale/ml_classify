@@ -75,7 +75,7 @@ class Train:
         """
         m = Metrics(labels=labels, val_data=validation_generator, batch_size=batch_size)
         wandb_call = WandbCallback(data_type="image", validation_data=validation_generator, labels=labels)
-        calls = [tensorboard, best_model, early_stop, m, wandb_call]
+        calls = [tensorboard, wandb_call]
         history = model.fit_generator(
                                     train_generator,
                                     steps_per_epoch=steps_per_epoch,
@@ -214,7 +214,8 @@ if __name__ == '__main__':
         exit(-1)
     print('Connecting to wandb with group {}'.format(env['WANDB_RUN_GROUP']))
     # TODO: Find why wandb couldnt import tensorboard.
-    wandb.init(project=args.project, entity='mbari', job_type='training', name='kerasclassification-' + args.project,
+    wandb.init(project=args.project, sync_tensorboard=True,
+               entity='mbari', job_type='training', name='kerasclassification-' + args.project,
                dir=os.environ.get('PROJECT_HOME'))
     # wandb.tensorboard.patch(save=True, tensorboardX=False)
 
