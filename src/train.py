@@ -8,6 +8,7 @@ sys.path.insert(0, parentdir)
 print('Adding {} to path'.format(parentdir))
 from transfer_model import TransferModel
 from metrics import Metrics
+from stopping import Stopping
 import wandb
 from wandb.keras import WandbCallback
 from argparser import ArgParser
