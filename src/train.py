@@ -14,6 +14,8 @@ from wandb.keras import WandbCallback
 from argparser import ArgParser
 import utils
 from threading import Thread
+import imblearn
+import shutil
 
 
 class Train:
@@ -133,27 +135,32 @@ class Train:
 
         # Rescale all images by 1./255 and apply image augmentation if requested
         train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255,
-                                                                     width_shift_range=args.augment_range,
-                                                                     height_shift_range=args.augment_range,
-                                                                     zoom_range=args.augment_range,
-                                                                     horizontal_flip=args.horizontal_flip,
-                                                                     vertical_flip=args.vertical_flip,
-                                                                     shear_range=args.shear_range
-                                                                     )
+                                                                        width_shift_range=args.augment_range,
+                                                                        height_shift_range=args.augment_range,
+                                                                        zoom_range=args.augment_range,
+                                                                        horizontal_flip=args.horizontal_flip,
+                                                                        vertical_flip=args.vertical_flip,
+                                                                        shear_range=args.shear_range
+                                                                        )
 
         val_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255,
-                                                                   width_shift_range=args.augment_range,
-                                                                   height_shift_range=args.augment_range,
-                                                                   zoom_range=args.augment_range,
-                                                                   horizontal_flip=args.horizontal_flip,
-                                                                   vertical_flip=args.vertical_flip,
-                                                                   shear_range=args.shear_range
-                                                                   )
+                                                                      width_shift_range=args.augment_range,
+                                                                      height_shift_range=args.augment_range,
+                                                                      zoom_range=args.augment_range,
+                                                                      horizontal_flip=args.horizontal_flip,
+                                                                      vertical_flip=args.vertical_flip,
+                                                                      shear_range=args.shear_range
+                                                                      )
         project_home = os.environ.get('PROJECT_HOME')
 
         output_dir = os.path.join(project_home, 'data')
         train_dir = os.path.join(output_dir, args.train_tar.split('.')[0])
         val_dir = os.path.join(output_dir, args.val_tar.split('.')[0])
+
+        # todo: Use tempfile library to create temp directories that flow_from_directory can access
+
+        temp_dir = os.path.join(output_dir, 'temp_blc')
+
         if 'train' not in os.listdir(output_dir):
             def extract_tar():
                 tar_bucket = os.environ.get('TAR_BUCKET')
@@ -163,24 +170,63 @@ class Train:
             thread1 = Thread(target=extract_tar())
             thread1.start()
             thread1.join()
-        labels = list(filter('.DS_Store'.__ne__, list(filter('._.DS_Store'.__ne__, os.listdir(output_dir+'/train')))))
+        labels = list(filter('.DS_Store'.__ne__, list(filter('._.DS_Store'.__ne__, os.listdir(output_dir + '/train')))))
         labels.sort()
         model, image_size, fine_tune_at = TransferModel(args.base_model).build(args.l2_weight_decay_alpha)
         train = Train()
 
         # Flow training images in batches of <batch_size> using train_datagen generator
+
         training_generator = train_datagen.flow_from_directory(
-            train_dir,
+            train_dir)
+        validation_generator = train_datagen.flow_from_directory(
+            val_dir)
+
+        train_names, val_names = [], []
+        for f in training_generator.filenames:
+            train_names.append([f])
+        for f in validation_generator.filenames:
+            val_names.append([f])
+
+        blc_training_gen, t_batch = imblearn.keras.balanced_batch_generator(
+            train_names,
+            training_generator.labels,
+            batch_size=len(training_generator.labels),
+            sampler=imblearn.over_sampling.RandomOverSampler())
+        blc_validation_gen, v_batch = imblearn.keras.balanced_batch_generator(
+            val_names,
+            validation_generator.labels,
+            batch_size=len(validation_generator.labels),
+            sampler=imblearn.over_sampling.RandomOverSampler())
+
+        # blc_names is an array of arrays containing a single string representing the directory of an image
+        blc_train_fnames, blc_train_labels = next(blc_training_gen)
+        blc_train_dir = os.path.join(temp_dir, 'blc_train')
+        for f in blc_train_fnames:
+            train_fname_list = f[0]
+            dirname, train_fname = train_fname_list.split('/')
+            shutil.copy2(os.path.join(train_dir, train_fname_list), os.path.join(blc_train_dir, dirname))
+
+        training_generator = train_datagen.flow_from_directory(
+            blc_train_dir,
             target_size=(image_size, image_size),
             batch_size=args.batch_size,
             class_mode='categorical')
 
         # Flow validation images in batches of <batch_size> using test_datagen generator
+        blc_val_fnames, blc_val_labels = next(blc_validation_gen)
+        blc_val_dir = os.path.join(temp_dir, 'blc_val')
+        for f in blc_val_fnames:
+            val_fname_list = f[0]
+            dirname, val_fname = val_fname_list.split('/')
+            shutil.copy2(os.path.join(val_dir, val_fname_list), os.path.join(blc_val_dir, dirname))
+
         validation_generator = val_datagen.flow_from_directory(
-            val_dir,
+            blc_val_dir,
             target_size=(image_size, image_size),
             batch_size=args.batch_size,
             class_mode='categorical')
+
         model.summary()
         history = train.compile_and_fit_model(model=model, fine_tune_at=fine_tune_at,
                                               train_generator=training_generator, lr=args.lr,
@@ -191,6 +237,8 @@ class Train:
                                               metrics=tf.keras.metrics.categorical_accuracy,
                                               labels=labels)
         train.print_metrics(history)
+        # shutil.rmtree(blc_train_dir)
+        # shutil.rmtree(blc_val_dir)
         # terminate tensorboard sessions
         sess.close()
         # this is what returns to history
