@@ -31,20 +31,25 @@ class ArgParser():
                                  help='add horizontal flip augmentation')
         self.parser.add_argument('--vertical_flip', type=self.boolean_string, default=False,
                                  help='add vertical flip augmentation')
-        self.parser.add_argument('--augment_range', type=float, default=0.0,  help='range '
-                                            'between 0-1 to apply width, shift, and zoom augmentation during training')
-        self.parser.add_argument('--shear_range', type=float, default=0.0,  help='range '
-                                            'between 0-1 to apply shear augmentation during training')
-        self.parser.add_argument("--epochs", help="Number of epochs for training", nargs='?', action='store', default=20,
-                            type=int)
+        self.parser.add_argument('--augment_range', type=float, default=0.0,
+                                 help='range between 0-1 to apply width, shift, and zoom augmentation during training')
+        self.parser.add_argument('--shear_range', type=float, default=0.0,
+                                 help='range between 0-1 to apply shear augmentation during training')
+        self.parser.add_argument("--epochs", help="Number of epochs for training", nargs='?', action='store',
+                                 default=20, type=int)
         self.parser.add_argument("--loss", help="Lossfunction for the gradients", nargs='?', action='store',
-                            default='categorical_crossentropy', type=str)
-        self.parser.add_argument("--optimizer", help="optimizer: adam, sgd, or rmsprop", default='adam', nargs='?', action='store', type=str)
-        self.parser.add_argument("--notes", help="Notes for the experiment", nargs='?', action='store', default='', type=str)
-        self.parser.add_argument("--sha", help="Git SHA for code runnning this", nargs='?', action='store', default='', type=str)
+                                 default='categorical_crossentropy', type=str)
+        self.parser.add_argument("--optimizer", help="optimizer: adam, sgd, or rmsprop",
+                                 default='adam', nargs='?', action='store', type=str)
+        self.parser.add_argument("--notes", help="Notes for the experiment", nargs='?',
+                                 action='store', default='', type=str)
+        self.parser.add_argument("--sha", help="Git SHA for code runnning this", nargs='?',
+                                 action='store', default='', type=str)
         self.parser.add_argument("--verbose", help="Verbose output", nargs='?', action='store', default=0, type=int)
         self.parser.add_argument("--project", help="Name of the projct", nargs='?',
                                  action='store', required=True, type=str)
+        self.parser.add_argument("--balance_data", type=self.boolean_string,
+                                 help="Balance Training data using imbalanced-learn", default=False)
 
     def parse_args(self):
         self.args = self.parser.parse_args()
@@ -68,6 +73,7 @@ class ArgParser():
         wandb.config.base_model = self.args.base_model
         wandb.config.batch_size = self.args.batch_size
         wandb.config.notes = self.args.notes
+        wandb.config.balance_data = self.args.balance_data
 
     def summary(self):
         print("project:", self.args.project)
@@ -85,6 +91,7 @@ class ArgParser():
         print("epochs:", self.args.epochs)
         print("train_tar:", self.args.train_tar)
         print("val_tar:", self.args.val_tar)
+        print("balance_data:", self.args.balance_data)
 
 if __name__ == '__main__':
     parser = ArgParser()
