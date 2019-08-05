@@ -79,7 +79,7 @@ class Train:
         """
         m = Metrics(labels=labels, val_data=validation_generator, batch_size=batch_size)
         wandb_call = WandbCallback(data_type="image", validation_data=validation_generator, labels=labels)
-        calls = [tensorboard, wandb_call, m]
+        calls = [tensorboard, m, wandb_call]
         history = model.fit_generator(
                                     train_generator,
                                     steps_per_epoch=steps_per_epoch,

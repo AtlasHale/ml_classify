@@ -72,7 +72,6 @@ def download_gs(tar_file, tar_bucket, out_dir):
     blob.download_to_filename(out_file)
 
 
-
 def list_bucket_contents(bucket):
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket)
