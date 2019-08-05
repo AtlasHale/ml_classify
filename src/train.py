@@ -17,6 +17,7 @@ import numpy as np
 from threading import Thread
 import shutil
 import imblearn
+import tempfile
 
 
 class Train:
@@ -159,9 +160,6 @@ class Train:
         val_dir = os.path.join(output_dir, args.val_tar.split('.')[0])
 
         # todo: Use tempfile library to create temp directories that flow_from_directory can access
-
-        temp_dir = os.path.join(output_dir, 'temp_blc')
-
         if 'train' not in os.listdir(output_dir):
             def extract_tar():
                 tar_bucket = os.environ.get('TAR_BUCKET')
@@ -180,10 +178,14 @@ class Train:
 
         if args.balance_data is True:
             print('Balancing data')
+
+            blc_dir = tempfile.mkdtemp(suffix=None, prefix='blc_')
+
             training_generator = train_datagen.flow_from_directory(
                 train_dir)
             validation_generator = train_datagen.flow_from_directory(
                 val_dir)
+            species = training_generator.class_indices
 
             train_names, val_names = [], []
             for f in training_generator.filenames:
@@ -204,7 +206,9 @@ class Train:
 
             # blc_names is an array of arrays containing a single string representing the directory of an image
             blc_train_fnames, blc_train_labels = next(blc_training_gen)
-            blc_train_dir = os.path.join(temp_dir, 'blc_train')
+            blc_train_dir = os.path.join(blc_dir, 'blc_train')
+            utils.make_blc_dir(blc_train_dir, species)
+
             for f in blc_train_fnames:
                 train_fname_list = f[0]
                 dirname, train_fname = train_fname_list.split('/')
@@ -215,15 +219,23 @@ class Train:
                 target_size=(image_size, image_size),
                 batch_size=args.batch_size,
                 class_mode='categorical')
-            print(training_generator[0])
 
             # Flow validation images in batches of <batch_size> using test_datagen generator
             blc_val_fnames, blc_val_labels = next(blc_validation_gen)
-            blc_val_dir = os.path.join(temp_dir, 'blc_val')
+            blc_val_dir = os.path.join(blc_dir, 'blc_val')
+            utils.make_blc_dir(blc_val_dir, species)
+
             for f in blc_val_fnames:
                 val_fname_list = f[0]
                 dirname, val_fname = val_fname_list.split('/')
                 shutil.copy2(os.path.join(val_dir, val_fname_list), os.path.join(blc_val_dir, dirname))
+
+            validation_generator = val_datagen.flow_from_directory(
+                blc_val_dir,
+                target_size=(image_size, image_size),
+                batch_size=args.batch_size,
+                class_mode='categorical')
+
         else:
             validation_generator = val_datagen.flow_from_directory(
                 val_dir,
@@ -247,9 +259,8 @@ class Train:
                                               metrics=tf.keras.metrics.categorical_accuracy,
                                               labels=labels)
         train.print_metrics(history)
-        # shutil.rmtree(blc_train_dir)
-        # shutil.rmtree(blc_val_dir)
-        # terminate tensorboard sessions
+        if args.balance_data is True:
+            shutil.rmtree(blc_dir)
         sess.close()
         # this is what returns to history
         # only return the best model

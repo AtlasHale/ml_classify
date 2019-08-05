@@ -48,6 +48,10 @@ def unpack(out_dir, tar_file, learning_curve=False):
         tar.extractall(path=out_dir)
         tar.close()
 
+def make_blc_dir(blc_dir, blc_species):
+    os.mkdir(blc_dir)
+    for specie in blc_species:
+        os.mkdir(os.path.join(blc_dir, specie))
 
 def has_number(tar_file):
     return any(letter.isdigit() for letter in tar_file)
