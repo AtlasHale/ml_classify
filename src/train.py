@@ -272,7 +272,7 @@ if __name__ == '__main__':
         exit(-1)
     print('Connecting to wandb with group {}'.format(env['WANDB_RUN_GROUP']))
     # TODO: Find why wandb couldnt import tensorboard.
-    wandb.init(project=args.project, sync_tensorboard=True,
+    wandb.init(project=args.project,
                entity='mbari', job_type='training', name='kerasclassification-' + args.project,
                dir=os.environ.get('PROJECT_HOME'))
     # wandb.tensorboard.patch(save=True, tensorboardX=False)
