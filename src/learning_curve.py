@@ -10,8 +10,8 @@ import random
 import shutil
 import tarfile
 import wandb
-import matplotlib.pyplot
 import numpy as np
+import csv
 
 
 def subsample(subset_percentage, train_dir):
@@ -77,6 +77,7 @@ def sliced_data(subset_percentage, project_home):
         tar.add(os.path.join(project_home, 'data', 'temp'), arcname=os.path.basename(os.path.join(project_home, 'data', 'temp')))
     tar.close()
 
+
 if __name__ == '__main__':
 
     # train the algorithm on incrementally increasing amounts of training data
@@ -111,6 +112,22 @@ if __name__ == '__main__':
     train_dir = os.path.join(project_home, 'data', 'train')
     val_dir = os.path.join(project_home, 'data', 'val')
 
+    csv_data = [['percent', 'acc']]
+    if os.path.exists(os.path.join(project_home, 'train.csv')):
+        os.remove(os.path.join(project_home, 'train.csv'))
+    with open(os.path.join(project_home, 'train.csv'), 'w') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerows(csv_data)
+    csv_file.close()
+
+    csv_data = [['percent', 'val']]
+    if os.path.exists(os.path.join(project_home, 'val.csv')):
+        os.remove(os.path.join(project_home, 'val.csv'))
+    with open(os.path.join(project_home, 'val.csv'), 'w') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerows(csv_data)
+    csv_file.close()
+
     for p in percent:
         # subsample
         if os.path.exists(os.path.join(project_home, 'best.weights.hdf5')):
@@ -142,7 +159,17 @@ if __name__ == '__main__':
     
         wandb.log({"train_error": 1 - model.history['categorical_accuracy'][idx], "Percent Train Data": p})
         wandb.log({"val_error": 1 - model.history['val_categorical_accuracy'][idx], "Percent Train Data": p})
+        csv_data = [[p, model.history['categorical_accuracy'][idx]]]
+        with open(os.path.join(project_home, 'train.csv'), 'a') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerows(csv_data)
+        csv_file.close()
 
+        csv_data = [[p, model.history['val_categorical_accuracy'][idx]]]
+        with open(os.path.join(project_home, 'val.csv'), 'a') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerows(csv_data)
+        csv_file.close()
     # plot the last error of each training cycle and log as object in wandb
     # this will convert to plotly by default in wandb
 
