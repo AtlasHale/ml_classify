@@ -107,11 +107,11 @@ To run general Inference with basic metrics:
 ```
 python3 src/train.py --horizontal_flip True --augment_range 0.2 \
 --train_tar train.tar.gz --val_tar val.tar.gz --lr 0.001 --base_model inceptionv3 \
---project inception_training --batch_size 4 --epoch 50
+--project inception_training --batch_size 4 --epoch 50 --balance_data True
 ```
 To run incrementally increasing the size of the training data set per class:
 ```
 python3 src/learning_curve.py --horizontal_flip True --augment_range 0.2 \
 --train_tar 100_train.tar.gz --val_tar val.tar.gz --lr 0.001 --base_model inceptionv3 \
---project inception_learning_curve --batch_size 4 --epoch 10
+--project inception_learning_curve --batch_size 4 --epoch 10 --balance_data True
 ```
