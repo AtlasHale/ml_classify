@@ -130,6 +130,17 @@ if __name__ == '__main__':
         writer.writerows(csv_data)
     csv_file.close()
 
+    folders = sorted(os.listdir(os.path.join(project_home, 'data', 'train')))
+    print(folders)
+    headers = ['percent']
+    for f in folders:
+        headers.append(f)
+    csv_data = [headers]
+    with open(os.path.join(project_home, 'image_numbers.csv'), 'w') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerows(csv_data)
+    csv_file.close()
+
     for p in percent:
         # subsample
         if os.path.exists(os.path.join(project_home, 'best.weights.hdf5')):
@@ -158,9 +169,19 @@ if __name__ == '__main__':
                 if model.history['val_categorical_accuracy'][i] > maxValAcc:
                     maxValAcc = model.history['val_categorical_accuracy'][i]
                     idx = i
-    
+        csv_data = []
+        row = [p]
+        for f in folders:
+            row.append(len(os.listdir(os.path.join(project_home, 'data', 'temp', f))))
+        csv_data.append(row)
+        with open(os.path.join(project_home, 'image_numbers.csv'), 'a') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerows(csv_data)
+        csv_file.close()
+
         wandb.log({"train_error": 1 - model.history['categorical_accuracy'][idx], "Percent Train Data": p})
         wandb.log({"val_error": 1 - model.history['val_categorical_accuracy'][idx], "Percent Train Data": p})
+
         csv_data = [[p, model.history['categorical_accuracy'][idx]]]
         with open(os.path.join(project_home, 'train.csv'), 'a') as csv_file:
             writer = csv.writer(csv_file)

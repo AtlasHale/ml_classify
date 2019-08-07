@@ -18,7 +18,7 @@ from threading import Thread
 import shutil
 import imblearn
 import tempfile
-
+import tensorboard
 
 class Train:
 
@@ -133,7 +133,7 @@ class Train:
         :param parser: command line argument object
         """
 
-        sess = tf.compat.v1.InteractiveSession()
+        sess = tf.compat.v1.Session()
 
         # Rescale all images by 1./255 and apply image augmentation if requested
         train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255,
@@ -284,9 +284,13 @@ if __name__ == '__main__':
     print('Connecting to wandb with group {}'.format(env['WANDB_RUN_GROUP']))
     # TODO: Find why wandb couldnt import tensorboard.
     wandb.init(project=args.project,
-               entity='mbari', job_type='training', name='kerasclassification-' + args.project,
-               dir=os.environ.get('PROJECT_HOME'))
-    # wandb.tensorboard.patch(save=True, tensorboardX=False)
+               sync_tensorboard=True,
+               entity='mbari',
+               job_type='training',
+               name='kerasclassification-' + args.project,
+               dir=os.environ.get('PROJECT_HOME')
+               )
+    # wandb.tensorboard.patch(save=True, tensorboard1.14.0=False)
 
     parser.log_params(wandb)
 
