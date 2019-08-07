@@ -19,6 +19,7 @@ import shutil
 import imblearn
 import tempfile
 import tensorboard
+import csv
 
 class Train:
 
@@ -79,7 +80,7 @@ class Train:
         """
         m = Metrics(labels=labels, val_data=validation_generator, batch_size=batch_size)
         wandb_call = WandbCallback(data_type="image", validation_data=validation_generator, labels=labels)
-        calls = [tensorboard, m, wandb_call]
+        calls = [tensorboard, wandb_call]
         history = model.fit_generator(
                                     train_generator,
                                     steps_per_epoch=steps_per_epoch,
@@ -261,6 +262,7 @@ class Train:
         train.print_metrics(history)
         if args.balance_data is True:
             shutil.rmtree(blc_dir)
+
         sess.close()
         # this is what returns to history
         # only return the best model
@@ -299,8 +301,25 @@ if __name__ == '__main__':
     print("Using parameters")
     parser.summary()
 
-    Train().train_model(args)
+    model = Train().train_model(args)
 
+    header = ['epoch']
+    for column_name in model.history:
+        header.append(column_name)
+
+    project_home = os.environ.get('PROJECT_HOME')
+    if os.path.exists(os.path.join(project_home, 'model_metrics.csv')):
+        os.remove(os.path.join(project_home, 'model_metrics.csv'))
+    with open(os.path.join(project_home, 'model_metrics.csv'), 'w') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=header)
+        writer.writeheader()
+        for metric in range(len(model.history['loss'])):
+            writer.writerow({'epoch': metric, 'loss': model.history['loss'][metric],
+                             'val_loss': model.history['val_loss'][metric],
+                             'categorical_accuracy': model.history['categorical_accuracy'][metric],
+                             'val_categorical_accuracy': model.history['val_categorical_accuracy'][metric]})
+    csv_file.close()
+    
     runtime = time() - start_time
 
     print('Model complete. Total runtime {}'.format(runtime))
