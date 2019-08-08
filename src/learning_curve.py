@@ -132,6 +132,11 @@ if __name__ == '__main__':
 
     folders = sorted(os.listdir(os.path.join(project_home, 'data', 'train')))
     print(folders)
+    for label in folders:
+        filename = label + '.csv'
+        csv_data = [['precision', 'recall', 'F1']]
+        if os.path.exists(os.path.join(project_home, filename)):
+            os.remove(os.path.join(project_home, filename))
     headers = ['percent']
     for f in folders:
         headers.append(f)

@@ -3,6 +3,8 @@ import numpy as np
 import sklearn.metrics
 import threading
 import wandb
+import os
+import csv
 
 
 class Metrics(tensorflow.keras.callbacks.Callback):
@@ -17,6 +19,7 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         self.trim_end = 0
 
     def on_epoch_end(self, epoch, logs={}):
+        project_home = os.environ.get('PROJECT_HOME')
         self.epoch_count += 1
         batches = len(self.validation_data)
         total = batches * self.batch_size
@@ -59,7 +62,7 @@ class Metrics(tensorflow.keras.callbacks.Callback):
             wandb.log(recall_log, step=epoch)
             with open(os.path.join(project_home, filename), 'a') as csv_file:
                 writer = csv.writer(csv_file)
-                writer.writerows([[precision_log, recall_log, f1_log]])
+                writer.writerows([[_val_precision[re_map[label]], _val_recall[re_map[label]], _val_f1[re_map[label]]]])
             csv_file.close()
         return
 
