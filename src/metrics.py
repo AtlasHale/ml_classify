@@ -16,14 +16,6 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         self.trim_start = 0
         self.trim_end = 0
 
-    def on_train_begin(self, logs={}):
-        self.val_f1s = []
-        self.val_recalls = []
-        self.val_precisions = []
-        self.val_f1_overall = []
-        self.val_recalls_overall = []
-        self.val_precisions_overall = []
-
     def on_epoch_end(self, epoch, logs={}):
         self.epoch_count += 1
         batches = len(self.validation_data)
@@ -47,26 +39,28 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         label_predict = [class_map[i] for i in val_predict]
         label_true = [class_map[i] for i in val_true]
 
+        # possibly use different average param
         _val_f1 = sklearn.metrics.f1_score(label_true, label_predict, labels=self.labels, average=None)
         _val_recall = sklearn.metrics.recall_score(label_true, label_predict, labels=self.labels, average=None)
-        _val_precision = sklearn.metrics.precision_score(label_true, label_predict, labels=self.labels, average=None) # possibly something besides none (binary, etc)
-        # _val_f1_overall = sklearn.metrics.f1_score(val_true, val_predict, labels=self.labels)
-        # _val_recall_overall = sklearn.metrics.recall_score(val_true, val_predict, labels=self.labels,)
-        # _val_precision_overall = sklearn.metrics.precision_score(val_true, val_predict, labels=self.labels,)
-        #
-        # self.val_f1s.append(_val_f1)
-        # self.val_recalls.append(_val_recall)
-        # self.val_precisions.append(_val_precision)
-        # self.val_f1s_overall.append(_val_f1_overall)
-        # self.val_recalls_overall.append(_val_recall_overall)
-        # self.val_precisions_overall.append(_val_precision_overall)
+        _val_precision = sklearn.metrics.precision_score(label_true, label_predict, labels=self.labels, average=None)
         for label in self.labels:
+            filename = label + '.csv'
+            csv_data = [['precision', 'recall', 'F1']]
+            if not os.path.exists(os.path.join(project_home, filename)):
+                with open(os.path.join(project_home, filename), 'w') as csv_file:
+                    writer = csv.writer(csv_file)
+                    writer.writerows(csv_data)
+                csv_file.close()
             f1_log = {label+'_f1':_val_f1[re_map[label]]}
             precision_log = {label+'_precision':_val_precision[re_map[label]]}
             recall_log = {label+'_recall': _val_recall[re_map[label]]}
             wandb.log(f1_log, step=epoch)
             wandb.log(precision_log, step=epoch)
             wandb.log(recall_log, step=epoch)
+            with open(os.path.join(project_home, filename), 'a') as csv_file:
+                writer = csv.writer(csv_file)
+                writer.writerows([[precision_log, recall_log, f1_log]])
+            csv_file.close()
         return
 
     def parse_batch(self, batch, val_true, val_predict):
