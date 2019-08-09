@@ -6,6 +6,7 @@ import wandb
 import os
 import csv
 
+import argparser
 
 class Metrics(tensorflow.keras.callbacks.Callback):
 
@@ -19,7 +20,9 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         self.trim_end = 0
 
     def on_epoch_end(self, epoch, logs={}):
-        project_home = os.environ.get('PROJECT_HOME')
+        parser = argparser.ArgParser()
+        args = parser.parse_args()
+        print(args)
         self.epoch_count += 1
         batches = len(self.validation_data)
         total = batches * self.batch_size
@@ -46,24 +49,15 @@ class Metrics(tensorflow.keras.callbacks.Callback):
         _val_f1 = sklearn.metrics.f1_score(label_true, label_predict, labels=self.labels, average=None)
         _val_recall = sklearn.metrics.recall_score(label_true, label_predict, labels=self.labels, average=None)
         _val_precision = sklearn.metrics.precision_score(label_true, label_predict, labels=self.labels, average=None)
+        _val_precision = sklearn.metrics.precision_score(label_true, label_predict, labels=self.labels, average=None) # possibly something besides none (binary, etc)
+
         for label in self.labels:
-            filename = label + '.csv'
-            csv_data = [['precision', 'recall', 'F1']]
-            if not os.path.exists(os.path.join(project_home, filename)):
-                with open(os.path.join(project_home, filename), 'w') as csv_file:
-                    writer = csv.writer(csv_file)
-                    writer.writerows(csv_data)
-                csv_file.close()
             f1_log = {label+'_f1':_val_f1[re_map[label]]}
             precision_log = {label+'_precision':_val_precision[re_map[label]]}
             recall_log = {label+'_recall': _val_recall[re_map[label]]}
             wandb.log(f1_log, step=epoch)
             wandb.log(precision_log, step=epoch)
             wandb.log(recall_log, step=epoch)
-            with open(os.path.join(project_home, filename), 'a') as csv_file:
-                writer = csv.writer(csv_file)
-                writer.writerows([[_val_precision[re_map[label]], _val_recall[re_map[label]], _val_f1[re_map[label]]]])
-            csv_file.close()
         return
 
     def parse_batch(self, batch, val_true, val_predict):

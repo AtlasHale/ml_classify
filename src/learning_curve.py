@@ -83,7 +83,7 @@ def sliced_data(subset_percentage, project_home):
 if __name__ == '__main__':
 
     # train the algorithm on incrementally increasing amounts of training data
-    percent = [i for i in range(2, 102, 2)]
+    percent = [i for i in range(20, 102, 2)]
     training_size = {}
     hist_dict = {}
 
@@ -114,23 +114,8 @@ if __name__ == '__main__':
     train_dir = os.path.join(project_home, 'data', 'train')
     val_dir = os.path.join(project_home, 'data', 'val')
 
-    csv_data = [['percent', 'acc']]
-    if os.path.exists(os.path.join(project_home, 'train.csv')):
-        os.remove(os.path.join(project_home, 'train.csv'))
-    with open(os.path.join(project_home, 'train.csv'), 'w') as csv_file:
-        writer = csv.writer(csv_file)
-        writer.writerows(csv_data)
-    csv_file.close()
-
-    csv_data = [['percent', 'val']]
-    if os.path.exists(os.path.join(project_home, 'val.csv')):
-        os.remove(os.path.join(project_home, 'val.csv'))
-    with open(os.path.join(project_home, 'val.csv'), 'w') as csv_file:
-        writer = csv.writer(csv_file)
-        writer.writerows(csv_data)
-    csv_file.close()
-
     folders = sorted(os.listdir(os.path.join(project_home, 'data', 'train')))
+<<<<<<< Updated upstream
     print(folders)
     for label in folders:
         filename = label + '.csv'
@@ -145,6 +130,8 @@ if __name__ == '__main__':
         writer = csv.writer(csv_file)
         writer.writerows(csv_data)
     csv_file.close()
+=======
+>>>>>>> Stashed changes
 
     for p in percent:
         # subsample
@@ -174,30 +161,10 @@ if __name__ == '__main__':
                 if model.history['val_categorical_accuracy'][i] > maxValAcc:
                     maxValAcc = model.history['val_categorical_accuracy'][i]
                     idx = i
-        csv_data = []
-        row = [p]
-        for f in folders:
-            row.append(len(os.listdir(os.path.join(project_home, 'data', 'temp', f))))
-        csv_data.append(row)
-        with open(os.path.join(project_home, 'image_numbers.csv'), 'a') as csv_file:
-            writer = csv.writer(csv_file)
-            writer.writerows(csv_data)
-        csv_file.close()
 
-        wandb.log({"train_error": 1 - model.history['categorical_accuracy'][idx], "Percent Train Data": p})
+        wandb.log({"train_error": 1 - model.history['categorical_accuracy'][idx], "Percent Train Data": p}, commit=False)
         wandb.log({"val_error": 1 - model.history['val_categorical_accuracy'][idx], "Percent Train Data": p})
 
-        csv_data = [[p, model.history['categorical_accuracy'][idx]]]
-        with open(os.path.join(project_home, 'train.csv'), 'a') as csv_file:
-            writer = csv.writer(csv_file)
-            writer.writerows(csv_data)
-        csv_file.close()
-
-        csv_data = [[p, model.history['val_categorical_accuracy'][idx]]]
-        with open(os.path.join(project_home, 'val.csv'), 'a') as csv_file:
-            writer = csv.writer(csv_file)
-            writer.writerows(csv_data)
-        csv_file.close()
     # plot the last error of each training cycle and log as object in wandb
     # this will convert to plotly by default in wandb
 
