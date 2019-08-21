@@ -205,15 +205,21 @@ class Train:
                 batch_size=len(validation_generator.labels),
                 sampler=imblearn.over_sampling.RandomOverSampler())
 
-            # blc_names is an array of arrays containing a single string representing the directory of an image
+            # *_names is an array of arrays containing a single string representing the directory of an image
             blc_train_fnames, blc_train_labels = next(blc_training_gen)
             blc_train_dir = os.path.join(blc_dir, 'blc_train')
             utils.make_blc_dir(blc_train_dir, species)
+            bal_nums = list(range(0, len(blc_train_fnames)))
+            bal_nums_c = 0
 
             for f in blc_train_fnames:
                 train_fname_list = f[0]
                 dirname, train_fname = train_fname_list.split('/')
-                shutil.copy2(os.path.join(train_dir, train_fname_list), os.path.join(blc_train_dir, dirname))
+                if os.path.exists(os.path.join(blc_train_dir, os.path.join(dirname, train_fname))):
+                    train_fname = str(bal_nums[bal_nums_c]) + train_fname
+                    bal_nums_c += 1
+                shutil.copy2(os.path.join(train_dir, train_fname_list), os.path.join(blc_train_dir,
+                                                                                     os.path.join(dirname, train_fname)))
 
             training_generator = train_datagen.flow_from_directory(
                 blc_train_dir,
@@ -225,11 +231,17 @@ class Train:
             blc_val_fnames, blc_val_labels = next(blc_validation_gen)
             blc_val_dir = os.path.join(blc_dir, 'blc_val')
             utils.make_blc_dir(blc_val_dir, species)
+            val_nums = list(range(0, len(blc_val_fnames)))
+            val_nums_c = 0
 
             for f in blc_val_fnames:
                 val_fname_list = f[0]
                 dirname, val_fname = val_fname_list.split('/')
-                shutil.copy2(os.path.join(val_dir, val_fname_list), os.path.join(blc_val_dir, dirname))
+                if os.path.exists(os.path.join(blc_val_dir, os.path.join(dirname, val_fname))):
+                    val_fname = str(val_nums[val_nums_c]) + val_fname
+                    val_nums_c += 1
+                shutil.copy2(os.path.join(val_dir, val_fname_list), os.path.join(blc_val_dir,
+                                                                                 os.path.join(dirname, val_fname)))
 
             validation_generator = val_datagen.flow_from_directory(
                 blc_val_dir,
