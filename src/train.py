@@ -184,28 +184,20 @@ class Train:
 
             training_generator = train_datagen.flow_from_directory(
                 train_dir)
-            validation_generator = train_datagen.flow_from_directory(
-                val_dir)
+
             species = training_generator.class_indices
 
-            train_names, val_names = [], []
+            train_names = []
             for f in training_generator.filenames:
                 train_names.append([f])
-            for f in validation_generator.filenames:
-                val_names.append([f])
 
             blc_training_gen, t_batch = imblearn.keras.balanced_batch_generator(
                 train_names,
                 training_generator.labels,
                 batch_size=len(training_generator.labels),
                 sampler=imblearn.over_sampling.RandomOverSampler())
-            blc_validation_gen, v_batch = imblearn.keras.balanced_batch_generator(
-                val_names,
-                validation_generator.labels,
-                batch_size=len(validation_generator.labels),
-                sampler=imblearn.over_sampling.RandomOverSampler())
 
-            # *_names is an array of arrays containing a single string representing the directory of an image
+            # train_names is an array of arrays containing a single string representing the directory of an image
             blc_train_fnames, blc_train_labels = next(blc_training_gen)
             blc_train_dir = os.path.join(blc_dir, 'blc_train')
             utils.make_blc_dir(blc_train_dir, species)
@@ -227,24 +219,8 @@ class Train:
                 batch_size=args.batch_size,
                 class_mode='categorical')
 
-            # Flow validation images in batches of <batch_size> using test_datagen generator
-            blc_val_fnames, blc_val_labels = next(blc_validation_gen)
-            blc_val_dir = os.path.join(blc_dir, 'blc_val')
-            utils.make_blc_dir(blc_val_dir, species)
-            val_nums = list(range(0, len(blc_val_fnames)))
-            val_nums_c = 0
-
-            for f in blc_val_fnames:
-                val_fname_list = f[0]
-                dirname, val_fname = val_fname_list.split('/')
-                if os.path.exists(os.path.join(blc_val_dir, os.path.join(dirname, val_fname))):
-                    val_fname = str(val_nums[val_nums_c]) + val_fname
-                    val_nums_c += 1
-                shutil.copy2(os.path.join(val_dir, val_fname_list), os.path.join(blc_val_dir,
-                                                                                 os.path.join(dirname, val_fname)))
-
             validation_generator = val_datagen.flow_from_directory(
-                blc_val_dir,
+                val_dir,
                 target_size=(image_size, image_size),
                 batch_size=args.batch_size,
                 class_mode='categorical')
